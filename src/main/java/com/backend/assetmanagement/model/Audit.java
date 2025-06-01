@@ -13,11 +13,15 @@ public class Audit {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToOne
+    @OneToOne
     private Asset asset;
 
-    @ManyToOne
+    @OneToOne
     private Employee employee;
+    
+    @OneToOne
+    @JoinColumn(name="audit_submission")
+    private AuditSubmission auditSubmission;
 
     @Column(name = "due_date")
     private LocalDate dueDate;
@@ -25,49 +29,59 @@ public class Audit {
     @Enumerated(EnumType.STRING)
     private AuditStatus status = AuditStatus.pending;
 
-    public int getId() {
-        return id;
-    }
+	public int getId() {
+		return id;
+	}
 
-    public void setId(int id) {
-        this.id = id;
-    }
+	public void setId(int id) {
+		this.id = id;
+	}
 
-    public Asset getAsset() {
-        return asset;
-    }
+	public Asset getAsset() {
+		return asset;
+	}
 
-    public void setAsset(Asset asset) {
-        this.asset = asset;
-    }
+	public void setAsset(Asset asset) {
+		this.asset = asset;
+	}
 
-    public Employee getEmployee() {
-        return employee;
-    }
+	public Employee getEmployee() {
+		return employee;
+	}
 
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
-    }
+	public void setEmployee(Employee employee) {
+		this.employee = employee;
+	}
 
-    public LocalDate getDueDate() {
-        return dueDate;
-    }
+	public AuditSubmission getAuditSubmission() {
+		return auditSubmission;
+	}
 
-    public void setDueDate(LocalDate dueDate) {
-        this.dueDate = dueDate;
-    }
+	public void setAuditSubmission(AuditSubmission auditSubmission) {
+		this.auditSubmission = auditSubmission;
+	}
 
-    public AuditStatus getStatus() {
-        return status;
-    }
+	public LocalDate getDueDate() {
+		return dueDate;
+	}
 
-    public void setStatus(AuditStatus status) {
-        this.status = status;
-    }
+	public void setDueDate(LocalDate dueDate) {
+		this.dueDate = dueDate;
+	}
 
-    @Override
-    public String toString() {
-        return "Audit [id=" + id + ", asset=" + asset + ", employee=" + employee + ", dueDate=" + dueDate +
-               ", status=" + status + "]";
-    }
+	public AuditStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(AuditStatus status) {
+		this.status = status;
+	}
+
+	@Override
+	public String toString() {
+		return "Audit [id=" + id + ", asset=" + asset + ", employee=" + employee + ", auditSubmission="
+				+ auditSubmission + ", dueDate=" + dueDate + ", status=" + status + "]";
+	}
+	
+	
 }

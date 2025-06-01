@@ -12,10 +12,8 @@ public class AssetRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-
     @ManyToOne
     private Employee employee;
-
     @ManyToOne
     private Asset asset;
 
@@ -24,7 +22,6 @@ public class AssetRequest {
 
     @Column(name = "request_date")
     private LocalDate requestDate;
-
 
     public int getId() {
         return id;

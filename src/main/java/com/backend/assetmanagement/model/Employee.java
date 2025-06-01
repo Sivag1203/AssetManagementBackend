@@ -17,7 +17,8 @@ public class Employee {
     private String address;
     @Enumerated(EnumType.STRING)
     private Level level;
-
+    @OneToOne
+    private Auth auth;
     public int getId() {
         return id;
     }
@@ -74,9 +75,18 @@ public class Employee {
         this.level = level;
     }
 
-    @Override
-    public String toString() {
-        return "Employee [id=" + id + ", name=" + name + ", email=" + email + ", phone=" + phone +
-                ", department=" + department + ", address=" + address + ", level=" + level + "]";
-    }
+	public Auth getAuth() {
+		return auth;
+	}
+
+	public void setAuth(Auth auth) {
+		this.auth = auth;
+	}
+
+	@Override
+	public String toString() {
+		return "Employee [id=" + id + ", name=" + name + ", email=" + email + ", phone=" + phone + ", department="
+				+ department + ", address=" + address + ", level=" + level + ", auth=" + auth + "]";
+	}
+
 }
