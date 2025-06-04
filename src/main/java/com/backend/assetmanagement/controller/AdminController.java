@@ -2,6 +2,7 @@ package com.backend.assetmanagement.controller;
 
 import com.backend.assetmanagement.model.Admin;
 import com.backend.assetmanagement.model.Auth;
+import com.backend.assetmanagement.repository.AuthRepository;
 import com.backend.assetmanagement.security.CustomUserDetailsService;
 import com.backend.assetmanagement.security.JwtUtil;
 import com.backend.assetmanagement.service.AdminService;
@@ -13,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -22,6 +24,8 @@ public class AdminController {
     private AdminService adminService;
     @Autowired
     private JwtUtil jwtUtil;
+    @Autowired
+    private AuthRepository authRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -68,8 +72,9 @@ public class AdminController {
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(loginRequest.getEmail());
 
             if (passwordEncoder.matches(loginRequest.getPassword(), userDetails.getPassword())) {
-                String token = jwtUtil.generateToken(userDetails.getUsername());
-                return ResponseEntity.ok(token);
+                Auth auth = authRepository.findByEmail(loginRequest.getEmail());
+                String token = jwtUtil.generateToken(auth.getEmail(), auth.getRole()); // Include role
+                return ResponseEntity.ok(Map.of("token", token));
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
             }
@@ -77,4 +82,5 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed: " + e.getMessage());
         }
     }
+
 }
