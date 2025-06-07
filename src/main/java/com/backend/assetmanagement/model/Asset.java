@@ -22,7 +22,9 @@ public class Asset {
 
     @Enumerated(EnumType.STRING)
     private AssetStatus status = AssetStatus.available;
-
+    
+    @Column(name = "eligibility_level")
+    private String eligibilityLevel;
 
     public int getId() {
         return id;
@@ -63,10 +65,19 @@ public class Asset {
     public void setStatus(AssetStatus status) {
         this.status = status;
     }
+    
+    public String getEligibilityLevel() {
+		return eligibilityLevel;
+	}
+
+	public void setEligibilityLevel(String eligibilityLevel) {
+		this.eligibilityLevel = eligibilityLevel;
+	}
 
     @Override
     public String toString() {
         return "Asset [id=" + id + ", category=" + category + ", serialNumber=" + serialNumber +
                 ", specs=" + specs + ", status=" + status + "]";
     }
+
 }

@@ -11,4 +11,8 @@ public interface AssetRepository extends JpaRepository<Asset, Integer> {
 
     @Query("SELECT a FROM Asset a WHERE a.category.id = ?1")
     List<Asset> findByCategoryId(int categoryId);
+    
+    @Query("SELECT a FROM Asset a WHERE (a.eligibilityLevel = 'L1' OR (a.eligibilityLevel = 'L2' AND ?1 IN ('L2', 'L3')) OR (a.eligibilityLevel = 'L3' AND ?1 = 'L3'))")
+    	List<Asset> findEligibleAssetsForLevel(String level);
+
 }

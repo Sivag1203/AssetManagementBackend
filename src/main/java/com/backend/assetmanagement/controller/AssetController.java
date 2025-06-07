@@ -1,10 +1,12 @@
 package com.backend.assetmanagement.controller;
 
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import com.backend.assetmanagement.dto.AssetDTO;
 import com.backend.assetmanagement.model.Asset;
 import com.backend.assetmanagement.service.AssetService;
 
@@ -21,17 +23,17 @@ public class AssetController {
     }
 
     @GetMapping("/category/{categoryId}")
-    public List<Asset> getAssetsByCategory(@PathVariable int categoryId) {
+    public List<AssetDTO> getAssetsByCategory(@PathVariable int categoryId) {
         return assetService.getAssetsByCategory(categoryId);
     }
 
     @GetMapping("/{id}")
-    public Asset getAssetById(@PathVariable int id) {
+    public AssetDTO getAssetById(@PathVariable int id) {
         return assetService.getAssetById(id);
     }
 
     @GetMapping("/all")
-    public List<Asset> getAllAssets() {
+    public List<AssetDTO> getAllAssets() {
         return assetService.getAllAssets();
     }
 
@@ -43,5 +45,10 @@ public class AssetController {
     @DeleteMapping("/delete/{id}")
     public void deleteAsset(@PathVariable int id) {
         assetService.deleteAsset(id);
+    }
+
+    @GetMapping("/eligible")
+    public List<AssetDTO> getEligibleAssets(Principal principal) {
+        return assetService.getEligibleAssetsForEmployee(principal.getName());
     }
 }
