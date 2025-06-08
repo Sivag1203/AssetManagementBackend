@@ -1,6 +1,6 @@
 package com.backend.assetmanagement.controller;
 
-import com.backend.assetmanagement.model.AssignedAsset;
+import com.backend.assetmanagement.dto.AssignedAssetDTO;
 import com.backend.assetmanagement.service.AssignedAssetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,17 +15,17 @@ public class AssignedAssetController {
     private AssignedAssetService assignedAssetService;
 
     @PostMapping("/assign")
-    public AssignedAsset assignAsset(@RequestBody AssignedAsset assignedAsset) {
-        return assignedAssetService.assignAsset(assignedAsset);
+    public AssignedAssetDTO assignAsset(@RequestBody AssignedAssetDTO dto) {
+        return assignedAssetService.assignAsset(dto);
     }
 
     @GetMapping("/all")
-    public List<AssignedAsset> getAllAssignedAssets() {
+    public List<AssignedAssetDTO> getAllAssignedAssets() {
         return assignedAssetService.getAllAssignedAssets();
     }
 
     @GetMapping("/{id}")
-    public AssignedAsset getById(@PathVariable int id) {
+    public AssignedAssetDTO getById(@PathVariable int id) {
         return assignedAssetService.getById(id);
     }
 
@@ -35,17 +35,17 @@ public class AssignedAssetController {
     }
 
     @GetMapping("/employee/{employeeId}")
-    public List<AssignedAsset> getByEmployee(@PathVariable int employeeId) {
+    public List<AssignedAssetDTO> getByEmployee(@PathVariable int employeeId) {
         return assignedAssetService.getByEmployeeId(employeeId);
     }
 
     @GetMapping("/asset/{assetId}")
-    public List<AssignedAsset> getByAsset(@PathVariable int assetId) {
+    public List<AssignedAssetDTO> getByAsset(@PathVariable int assetId) {
         return assignedAssetService.getByAssetId(assetId);
     }
 
     @GetMapping("/employee/{employeeId}/asset/{assetId}")
-    public AssignedAsset getByEmployeeAndAsset(@PathVariable int employeeId, @PathVariable int assetId) {
+    public AssignedAssetDTO getByEmployeeAndAsset(@PathVariable int employeeId, @PathVariable int assetId) {
         return assignedAssetService.getByEmployeeAndAsset(employeeId, assetId);
     }
 }

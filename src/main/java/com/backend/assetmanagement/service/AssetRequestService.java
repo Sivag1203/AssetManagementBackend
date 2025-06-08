@@ -1,5 +1,6 @@
 package com.backend.assetmanagement.service;
 
+import com.backend.assetmanagement.dto.AssetRequestDTO;
 import com.backend.assetmanagement.enums.RequestStatus;
 import com.backend.assetmanagement.model.AssetRequest;
 import com.backend.assetmanagement.model.AssignedAsset;
@@ -26,8 +27,9 @@ public class AssetRequestService {
         return requestRepository.save(request);
     }
 
-    public List<AssetRequest> getAllRequests() {
-        return requestRepository.findAll();
+    public List<AssetRequestDTO> getAllRequests() {
+        List<AssetRequest> requests = requestRepository.findAll();
+        return AssetRequestDTO.convertToDTOList(requests);
     }
 
     public AssetRequest approveRequest(int requestId) {
@@ -48,12 +50,12 @@ public class AssetRequestService {
     public String rejectRequest(int requestId) {
         AssetRequest request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
-
         requestRepository.delete(request);
         return "Request rejected and deleted";
     }
 
-    public List<AssetRequest> getRequestsByEmployee(int employeeId) {
-        return requestRepository.findByEmployeeId(employeeId);
+    public List<AssetRequestDTO> getRequestsByEmployee(int employeeId) {
+        List<AssetRequest> requests = requestRepository.findByEmployeeId(employeeId);
+        return AssetRequestDTO.convertToDTOList(requests);
     }
 }

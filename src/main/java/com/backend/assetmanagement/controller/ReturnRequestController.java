@@ -1,6 +1,6 @@
 package com.backend.assetmanagement.controller;
 
-import com.backend.assetmanagement.model.ReturnRequest;
+import com.backend.assetmanagement.dto.ReturnRequestDTO;
 import com.backend.assetmanagement.service.ReturnRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,17 +15,17 @@ public class ReturnRequestController {
     private ReturnRequestService returnRequestService;
 
     @PostMapping("/create")
-    public ReturnRequest createRequest(@RequestBody ReturnRequest request) {
-        return returnRequestService.createRequest(request);
+    public ReturnRequestDTO createRequest(@RequestBody ReturnRequestDTO requestDTO) {
+        return returnRequestService.createRequest(requestDTO);
     }
 
     @GetMapping("/all")
-    public List<ReturnRequest> getAllRequests() {
+    public List<ReturnRequestDTO> getAllRequests() {
         return returnRequestService.getAllRequests();
     }
 
     @PutMapping("/approve/{id}")
-    public ReturnRequest approveRequest(@PathVariable int id) {
+    public ReturnRequestDTO approveRequest(@PathVariable int id) {
         return returnRequestService.approveRequest(id);
     }
 
@@ -35,7 +35,7 @@ public class ReturnRequestController {
     }
 
     @GetMapping("/employee/{employeeId}")
-    public List<ReturnRequest> getRequestsByEmployee(@PathVariable int employeeId) {
+    public List<ReturnRequestDTO> getRequestsByEmployee(@PathVariable int employeeId) {
         return returnRequestService.getRequestsByEmployee(employeeId);
     }
 }

@@ -1,5 +1,6 @@
 package com.backend.assetmanagement.controller;
 
+import com.backend.assetmanagement.dto.AdminDTO;
 import com.backend.assetmanagement.model.Admin;
 import com.backend.assetmanagement.model.Auth;
 import com.backend.assetmanagement.repository.AuthRepository;
@@ -26,10 +27,8 @@ public class AdminController {
     private JwtUtil jwtUtil;
     @Autowired
     private AuthRepository authRepository;
-
     @Autowired
     private PasswordEncoder passwordEncoder;
-    
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
@@ -39,12 +38,12 @@ public class AdminController {
     }
 
     @GetMapping("/all")
-    public List<Admin> getAllAdmins() {
+    public List<AdminDTO> getAllAdmins() {
         return adminService.getAllAdmins();
     }
 
     @GetMapping("/{id}")
-    public Admin getAdminById(@PathVariable int id) {
+    public AdminDTO getAdminById(@PathVariable int id) {
         return adminService.getAdminById(id);
     }
 
@@ -57,7 +56,7 @@ public class AdminController {
     public String deleteAdmin(@PathVariable int id) {
         return adminService.deleteAdmin(id);
     }
-    
+
     @PostMapping("/register")
     public ResponseEntity<Admin> register(@RequestBody Admin admin) {
         String encodedPassword = passwordEncoder.encode(admin.getAuth().getPassword());
@@ -73,7 +72,7 @@ public class AdminController {
 
             if (passwordEncoder.matches(loginRequest.getPassword(), userDetails.getPassword())) {
                 Auth auth = authRepository.findByEmail(loginRequest.getEmail());
-                String token = jwtUtil.generateToken(auth.getEmail(), auth.getRole()); // Include role
+                String token = jwtUtil.generateToken(auth.getEmail(), auth.getRole());
                 return ResponseEntity.ok(Map.of("token", token));
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
@@ -82,5 +81,4 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed: " + e.getMessage());
         }
     }
-
 }

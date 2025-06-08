@@ -1,5 +1,6 @@
 package com.backend.assetmanagement.service;
 
+import com.backend.assetmanagement.dto.AdminDTO;
 import com.backend.assetmanagement.exception.ResourceNotFoundException;
 import com.backend.assetmanagement.model.Admin;
 import com.backend.assetmanagement.model.Auth;
@@ -27,13 +28,15 @@ public class AdminService {
         return adminRepository.save(admin);
     }
 
-    public List<Admin> getAllAdmins() {
-        return adminRepository.findAll();
+    public List<AdminDTO> getAllAdmins() {
+        List<Admin> admins = adminRepository.findAll();
+        return AdminDTO.fromEntityList(admins);
     }
 
-    public Admin getAdminById(int id) {
-        return adminRepository.findById(id)
+    public AdminDTO getAdminById(int id) {
+        Admin admin = adminRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
+        return AdminDTO.fromEntity(admin);
     }
 
     public Admin updateAdmin(int id, Admin updatedAdmin) {
@@ -46,7 +49,6 @@ public class AdminService {
         existingAdmin.setDepartment(updatedAdmin.getDepartment());
         existingAdmin.setAddress(updatedAdmin.getAddress());
 
-        // Update Auth details
         Auth updatedAuth = updatedAdmin.getAuth();
         Auth existingAuth = existingAdmin.getAuth();
 

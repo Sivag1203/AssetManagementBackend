@@ -1,14 +1,20 @@
 package com.backend.assetmanagement.service;
 
+import com.backend.assetmanagement.dto.ReturnRequestDTO;
 import com.backend.assetmanagement.enums.ReturnStatus;
+import com.backend.assetmanagement.model.Asset;
 import com.backend.assetmanagement.model.AssignedAsset;
+import com.backend.assetmanagement.model.Employee;
 import com.backend.assetmanagement.model.ReturnRequest;
+import com.backend.assetmanagement.repository.AssetRepository;
 import com.backend.assetmanagement.repository.AssignedAssetRepository;
+import com.backend.assetmanagement.repository.EmployeeRepository;
 import com.backend.assetmanagement.repository.ReturnRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -20,41 +26,77 @@ public class ReturnRequestService {
     @Autowired
     private AssignedAssetRepository assignedAssetRepository;
 
-    public ReturnRequest createRequest(ReturnRequest request) {
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private AssetRepository assetRepository;
+
+    public ReturnRequestDTO createRequest(ReturnRequestDTO dto) {
+        Employee employee = employeeRepository.findById(dto.getEmployeeId())
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+        Asset asset = assetRepository.findById(dto.getAssetId())
+                .orElseThrow(() -> new RuntimeException("Asset not found"));
+
+        ReturnRequest request = new ReturnRequest();
+        request.setEmployee(employee);
+        request.setAsset(asset);
         request.setStatus(ReturnStatus.pending);
         request.setRequestDate(LocalDate.now());
-        return returnRequestRepository.save(request);
+
+        ReturnRequest saved = returnRequestRepository.save(request);
+        return convertToDTO(saved);
     }
 
-    public List<ReturnRequest> getAllRequests() {
-        return returnRequestRepository.findAll();
+    public List<ReturnRequestDTO> getAllRequests() {
+        List<ReturnRequest> requests = returnRequestRepository.findAll();
+        List<ReturnRequestDTO> dtos = new ArrayList<>();
+        for (ReturnRequest request : requests) {
+            dtos.add(convertToDTO(request));
+        }
+        return dtos;
     }
 
-    public ReturnRequest approveRequest(int requestId) {
-        ReturnRequest request = returnRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Return request not found"));
-
+    public ReturnRequestDTO approveRequest(int id) {
+        ReturnRequest request = returnRequestRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Request not found"));
         request.setStatus(ReturnStatus.completed);
         returnRequestRepository.save(request);
 
-        // Remove from assigned_assets
         AssignedAsset assignedAsset = assignedAssetRepository
                 .findByEmployeeAndAsset(request.getEmployee().getId(), request.getAsset().getId());
         if (assignedAsset != null) {
             assignedAssetRepository.delete(assignedAsset);
         }
 
-        return request;
+        return convertToDTO(request);
     }
 
-    public String rejectRequest(int requestId) {
-        ReturnRequest request = returnRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Return request not found"));
+    public String rejectRequest(int id) {
+        ReturnRequest request = returnRequestRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Request not found"));
         returnRequestRepository.delete(request);
-        return "Return request rejected and deleted";
+        return "Return request rejected and deleted.";
     }
 
-    public List<ReturnRequest> getRequestsByEmployee(int employeeId) {
-        return returnRequestRepository.findByEmployeeId(employeeId);
+    public List<ReturnRequestDTO> getRequestsByEmployee(int employeeId) {
+        List<ReturnRequest> requests = returnRequestRepository.findByEmployeeId(employeeId);
+        List<ReturnRequestDTO> dtos = new ArrayList<>();
+        for (ReturnRequest request : requests) {
+            dtos.add(convertToDTO(request));
+        }
+        return dtos;
+    }
+
+    private ReturnRequestDTO convertToDTO(ReturnRequest request) {
+        ReturnRequestDTO dto = new ReturnRequestDTO();
+        dto.setId(request.getId());
+        dto.setEmployeeId(request.getEmployee().getId());
+        dto.setEmployeeName(request.getEmployee().getName());
+        dto.setAssetId(request.getAsset().getId());
+        dto.setAssetSpecs(request.getAsset().getSpecs());
+        dto.setStatus(request.getStatus());
+        dto.setRequestDate(request.getRequestDate());
+        return dto;
     }
 }

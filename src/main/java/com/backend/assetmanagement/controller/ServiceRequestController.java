@@ -1,6 +1,6 @@
 package com.backend.assetmanagement.controller;
 
-import com.backend.assetmanagement.model.ServiceRequest;
+import com.backend.assetmanagement.dto.ServiceRequestDTO;
 import com.backend.assetmanagement.service.ServiceRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,22 +15,22 @@ public class ServiceRequestController {
     private ServiceRequestService serviceRequestService;
 
     @PostMapping("/create")
-    public ServiceRequest createRequest(@RequestBody ServiceRequest request) {
-        return serviceRequestService.createRequest(request);
+    public ServiceRequestDTO createRequest(@RequestBody ServiceRequestDTO dto) {
+        return serviceRequestService.createRequest(dto);
     }
 
     @GetMapping("/all")
-    public List<ServiceRequest> getAllRequests() {
+    public List<ServiceRequestDTO> getAllRequests() {
         return serviceRequestService.getAllRequests();
     }
 
     @GetMapping("/employee/{employeeId}")
-    public List<ServiceRequest> getRequestsByEmployee(@PathVariable int employeeId) {
+    public List<ServiceRequestDTO> getRequestsByEmployee(@PathVariable int employeeId) {
         return serviceRequestService.getRequestsByEmployee(employeeId);
     }
 
     @PutMapping("/approve/{id}")
-    public ServiceRequest approveRequest(@PathVariable int id) {
+    public ServiceRequestDTO approveRequest(@PathVariable int id) {
         return serviceRequestService.approveRequest(id);
     }
 
