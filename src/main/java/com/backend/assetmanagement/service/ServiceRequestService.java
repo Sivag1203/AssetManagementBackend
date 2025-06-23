@@ -2,18 +2,16 @@ package com.backend.assetmanagement.service;
 
 import com.backend.assetmanagement.dto.ServiceRequestDTO;
 import com.backend.assetmanagement.enums.ServiceStatus;
-import com.backend.assetmanagement.model.Asset;
-import com.backend.assetmanagement.model.Employee;
 import com.backend.assetmanagement.model.ServiceRequest;
-import com.backend.assetmanagement.repository.AssetRepository;
-import com.backend.assetmanagement.repository.EmployeeRepository;
+
 import com.backend.assetmanagement.repository.ServiceRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ServiceRequestService {
@@ -21,46 +19,18 @@ public class ServiceRequestService {
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
 
-    @Autowired
-    private EmployeeRepository employeeRepository;
-
-    @Autowired
-    private AssetRepository assetRepository;
-
-    public ServiceRequestDTO createRequest(ServiceRequestDTO dto) {
-        Employee employee = employeeRepository.findById(dto.getEmployeeId())
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
-
-        Asset asset = assetRepository.findById(dto.getAssetId())
-                .orElseThrow(() -> new RuntimeException("Asset not found"));
-
-        ServiceRequest request = new ServiceRequest();
-        request.setEmployee(employee);
-        request.setAsset(asset);
-        request.setDescription(dto.getDescription());
+    public ServiceRequest createRequest(ServiceRequest request) {
         request.setStatus(ServiceStatus.pending);
         request.setRequestDate(LocalDate.now());
-
-        ServiceRequest saved = serviceRequestRepository.save(request);
-        return convertToDTO(saved);
+        return serviceRequestRepository.save(request);
     }
 
-    public List<ServiceRequestDTO> getAllRequests() {
-        List<ServiceRequest> requests = serviceRequestRepository.findAll();
-        List<ServiceRequestDTO> dtos = new ArrayList<>();
-        for (ServiceRequest request : requests) {
-            dtos.add(convertToDTO(request));
-        }
-        return dtos;
+    public List<ServiceRequest> getAllRequests() {
+        return serviceRequestRepository.findAll();
     }
 
-    public List<ServiceRequestDTO> getRequestsByEmployee(int employeeId) {
-        List<ServiceRequest> requests = serviceRequestRepository.findByEmployeeId(employeeId);
-        List<ServiceRequestDTO> dtos = new ArrayList<>();
-        for (ServiceRequest request : requests) {
-            dtos.add(convertToDTO(request));
-        }
-        return dtos;
+    public List<ServiceRequest> getRequestsByEmployee(int employeeId) {
+        return serviceRequestRepository.findByEmployeeId(employeeId);
     }
 
     public ServiceRequestDTO approveRequest(int requestId) {
@@ -75,6 +45,23 @@ public class ServiceRequestService {
                 .orElseThrow(() -> new RuntimeException("Service request not found"));
         serviceRequestRepository.delete(request);
         return "Service request rejected and deleted";
+    }
+    
+    public ServiceRequestDTO markInProgress(int requestId) {
+        ServiceRequest request = serviceRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Service request not found"));
+        request.setStatus(ServiceStatus.in_progress);
+        return convertToDTO(serviceRequestRepository.save(request));
+    }
+
+    
+    public Map<String, Long> getStatusCounts() {
+        List<Object[]> results = serviceRequestRepository.countGroupedByStatus();
+        Map<String, Long> map = new HashMap<>();
+        for (Object[] obj : results) {
+            map.put(obj[0].toString(), (Long) obj[1]);
+        }
+        return map;
     }
 
     private ServiceRequestDTO convertToDTO(ServiceRequest request) {

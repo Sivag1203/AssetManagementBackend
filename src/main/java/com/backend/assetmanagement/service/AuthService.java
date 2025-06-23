@@ -3,6 +3,7 @@ package com.backend.assetmanagement.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.backend.assetmanagement.exception.ResourceNotFoundException;
@@ -14,6 +15,8 @@ public class AuthService {
 
     @Autowired
     private AuthRepository authRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public Auth addAuth(Auth auth) {
         return authRepository.save(auth);
@@ -33,7 +36,7 @@ public class AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("Auth not found with id: " + id));
 
         existingAuth.setEmail(updatedAuth.getEmail());
-        existingAuth.setPassword(updatedAuth.getPassword());
+        existingAuth.setPassword(passwordEncoder.encode(updatedAuth.getPassword()));
         existingAuth.setRole(updatedAuth.getRole());
 
         return authRepository.save(existingAuth);
@@ -45,4 +48,5 @@ public class AuthService {
 
         authRepository.delete(auth);
     }
+    
 }

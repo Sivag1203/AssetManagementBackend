@@ -1,6 +1,7 @@
 package com.backend.assetmanagement.controller;
 
 import com.backend.assetmanagement.dto.AssignedAssetDTO;
+import com.backend.assetmanagement.model.AssignedAsset;
 import com.backend.assetmanagement.service.AssignedAssetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class AssignedAssetController {
     }
 
     @GetMapping("/all")
-    public List<AssignedAssetDTO> getAllAssignedAssets() {
+    public List<AssignedAsset> getAllAssignedAssets() {
         return assignedAssetService.getAllAssignedAssets();
     }
 
@@ -35,7 +36,7 @@ public class AssignedAssetController {
     }
 
     @GetMapping("/employee/{employeeId}")
-    public List<AssignedAssetDTO> getByEmployee(@PathVariable int employeeId) {
+    public List<AssignedAsset> getByEmployee(@PathVariable int employeeId) {
         return assignedAssetService.getByEmployeeId(employeeId);
     }
 

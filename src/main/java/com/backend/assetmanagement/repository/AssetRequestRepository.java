@@ -10,4 +10,7 @@ public interface AssetRequestRepository extends JpaRepository<AssetRequest, Inte
     
     @Query("SELECT ar FROM AssetRequest ar WHERE ar.employee.id = :employeeId")
     List<AssetRequest> findByEmployeeId(int employeeId);
+    
+    @Query("SELECT ar.status, COUNT(ar) FROM AssetRequest ar GROUP BY ar.status")
+    List<Object[]> countGroupedByStatus();
 }

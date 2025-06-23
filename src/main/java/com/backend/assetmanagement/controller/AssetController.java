@@ -12,6 +12,7 @@ import com.backend.assetmanagement.service.AssetService;
 
 @RestController
 @RequestMapping("/api/assets")
+@CrossOrigin(origins = "http://localhost:5173/")
 public class AssetController {
 
     @Autowired
@@ -33,7 +34,7 @@ public class AssetController {
     }
 
     @GetMapping("/all")
-    public List<AssetDTO> getAllAssets() {
+    public List<Asset> getAllAssets() {
         return assetService.getAllAssets();
     }
 
@@ -48,7 +49,7 @@ public class AssetController {
     }
 
     @GetMapping("/eligible")
-    public List<AssetDTO> getEligibleAssets(Principal principal) {
+    public List<Asset> getEligibleAssets(Principal principal) {
         return assetService.getEligibleAssetsForEmployee(principal.getName());
     }
 }

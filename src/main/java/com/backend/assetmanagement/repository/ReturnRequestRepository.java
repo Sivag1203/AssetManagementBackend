@@ -10,5 +10,8 @@ public interface ReturnRequestRepository extends JpaRepository<ReturnRequest, In
 
     @Query("SELECT r FROM ReturnRequest r WHERE r.employee.id = :employeeId")
     List<ReturnRequest> findByEmployeeId(int employeeId);
+    
+    @Query("SELECT rr.status, COUNT(rr) FROM ReturnRequest rr GROUP BY rr.status")
+    List<Object[]> countGroupedByStatus();
 }
 	

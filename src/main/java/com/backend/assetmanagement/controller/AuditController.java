@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import com.backend.assetmanagement.dto.AuditDTO;
 
 @RestController
 @RequestMapping("/api/audit")
@@ -16,22 +15,22 @@ public class AuditController {
     private AuditService auditService;
 
     @PostMapping("/create/{assetId}/{employeeId}")
-    public AuditDTO createAudit(@PathVariable int assetId, @PathVariable int employeeId, @RequestBody Audit audit) {
+    public Audit createAudit(@PathVariable int assetId, @PathVariable int employeeId, @RequestBody Audit audit) {
         return auditService.createAudit(assetId, employeeId, audit);
     }
 
     @PostMapping("/submit/{auditId}")
-    public AuditDTO submitAudit(@PathVariable int auditId, @RequestBody AuditSubmission submission) {
+    public Audit submitAudit(@PathVariable int auditId, @RequestBody AuditSubmission submission) {
         return auditService.submitAudit(auditId, submission);
     }
 
     @GetMapping("/all")
-    public List<AuditDTO> getAllAudits() {
+    public List<Audit> getAllAudits() {
         return auditService.getAllAudits();
     }
 
     @GetMapping("/{id}")
-    public AuditDTO getAuditById(@PathVariable int id) {
+    public Audit getAuditById(@PathVariable int id) {
         return auditService.getAuditById(id);
     }
 
@@ -41,12 +40,12 @@ public class AuditController {
     }
 
     @GetMapping("/pending")
-    public List<AuditDTO> getPendingAudits() {
+    public List<Audit> getPendingAudits() {
         return auditService.getPendingAudits();
     }
 
     @GetMapping("/employee/{employeeId}")
-    public List<AuditDTO> getAuditsByEmployee(@PathVariable int employeeId) {
+    public List<Audit> getAuditsByEmployee(@PathVariable int employeeId) {
         return auditService.getAuditsByEmployee(employeeId);
     }
 }

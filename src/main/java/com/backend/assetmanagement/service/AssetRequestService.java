@@ -1,6 +1,5 @@
 package com.backend.assetmanagement.service;
 
-import com.backend.assetmanagement.dto.AssetRequestDTO;
 import com.backend.assetmanagement.enums.RequestStatus;
 import com.backend.assetmanagement.model.AssetRequest;
 import com.backend.assetmanagement.model.AssignedAsset;
@@ -10,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AssetRequestService {
@@ -27,9 +28,8 @@ public class AssetRequestService {
         return requestRepository.save(request);
     }
 
-    public List<AssetRequestDTO> getAllRequests() {
-        List<AssetRequest> requests = requestRepository.findAll();
-        return AssetRequestDTO.convertToDTOList(requests);
+    public List<AssetRequest> getAllRequests() {
+        return requestRepository.findAll();
     }
 
     public AssetRequest approveRequest(int requestId) {
@@ -54,8 +54,16 @@ public class AssetRequestService {
         return "Request rejected and deleted";
     }
 
-    public List<AssetRequestDTO> getRequestsByEmployee(int employeeId) {
-        List<AssetRequest> requests = requestRepository.findByEmployeeId(employeeId);
-        return AssetRequestDTO.convertToDTOList(requests);
+    public List<AssetRequest> getRequestsByEmployee(int employeeId) {
+        return requestRepository.findByEmployeeId(employeeId);
+    }
+    
+    public Map<String, Long> getStatusCounts() {
+        List<Object[]> results = requestRepository.countGroupedByStatus();
+        Map<String, Long> map = new HashMap<>();
+        for (Object[] obj : results) {
+            map.put(obj[0].toString(), (Long) obj[1]);
+        }
+        return map;
     }
 }

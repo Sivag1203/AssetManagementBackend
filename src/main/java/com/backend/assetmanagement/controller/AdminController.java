@@ -14,11 +14,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
+@CrossOrigin(origins = "http://localhost:5173/")
 public class AdminController {
 
     @Autowired
@@ -81,4 +84,21 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed: " + e.getMessage());
         }
     }
+    
+    @GetMapping("/details")
+    public ResponseEntity<Map<String, Object>> getLoggedInAdminDetails(Principal principal) {
+        String email = principal.getName();
+        Admin admin = adminService.getAdminByEmail(email);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", admin.getId());
+        response.put("name", admin.getName());
+        response.put("email", admin.getEmail());
+        response.put("phone", admin.getPhone());
+        response.put("department", admin.getDepartment());
+        response.put("address", admin.getAddress());
+        response.put("role", admin.getAuth().getRole());
+        return ResponseEntity.ok(response);
+    }
+
 }

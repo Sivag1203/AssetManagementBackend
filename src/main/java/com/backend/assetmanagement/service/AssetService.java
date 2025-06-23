@@ -29,6 +29,16 @@ public class AssetService {
     }
 
     public Asset addAsset(int categoryId, Asset asset) {
+        if (asset.getSerialNumber() == null || asset.getSerialNumber().trim().isEmpty()) {
+            throw new IllegalArgumentException("Serial number cannot be empty.");
+        }
+        if (asset.getSpecs() == null || asset.getSpecs().trim().isEmpty()) {
+            throw new IllegalArgumentException("Specs cannot be empty.");
+        }
+        if (asset.getEligibilityLevel() == null || asset.getEligibilityLevel().trim().isEmpty()) {
+            throw new IllegalArgumentException("Eligibility level cannot be empty.");
+        }
+
         AssetCategory category = categoryRepo.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Asset Category not found with ID: " + categoryId));
         asset.setCategory(category);
@@ -48,18 +58,31 @@ public class AssetService {
         return new AssetDTO(asset.getId(), asset.getSerialNumber(), asset.getSpecs(), asset.getStatus());
     }
 
-    public List<AssetDTO> getAllAssets() {
+    public List<Asset> getAllAssets() {
         List<Asset> assets = assetRepo.findAll();
-        return AssetDTO.convertToDTOList(assets);
+//        return AssetDTO.convertToDTOList(assets);
+        return assets;
     }
 
     public Asset updateAsset(int assetId, Asset updatedAsset) {
+        if (updatedAsset.getSerialNumber() == null || updatedAsset.getSerialNumber().trim().isEmpty()) {
+            throw new IllegalArgumentException("Serial number cannot be empty.");
+        }
+        if (updatedAsset.getSpecs() == null || updatedAsset.getSpecs().trim().isEmpty()) {
+            throw new IllegalArgumentException("Specs cannot be empty.");
+        }
+        if (updatedAsset.getEligibilityLevel() == null || updatedAsset.getEligibilityLevel().trim().isEmpty()) {
+            throw new IllegalArgumentException("Eligibility level cannot be empty.");
+        }
+
         Asset asset = assetRepo.findById(assetId)
                 .orElseThrow(() -> new ResourceNotFoundException("Asset not found with ID: " + assetId));
 
         asset.setSerialNumber(updatedAsset.getSerialNumber());
         asset.setSpecs(updatedAsset.getSpecs());
         asset.setStatus(updatedAsset.getStatus());
+        asset.setEligibilityLevel(updatedAsset.getEligibilityLevel());
+
         return assetRepo.save(asset);
     }
 
@@ -69,10 +92,10 @@ public class AssetService {
         assetRepo.delete(asset);
     }
 
-    public List<AssetDTO> getEligibleAssetsForEmployee(String email) {
+    public List<Asset> getEligibleAssetsForEmployee(String email) {
         Employee employee = employeeRepo.findByEmail(email);
         if (employee == null) return List.of(); 
         List<Asset> assets = assetRepo.findEligibleAssetsForLevel(employee.getLevel().name());
-        return AssetDTO.convertToDTOList(assets);
+        return assets;
     }
 }

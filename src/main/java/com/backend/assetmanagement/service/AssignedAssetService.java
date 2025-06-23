@@ -37,10 +37,8 @@ public class AssignedAssetService {
         return new AssignedAssetDTO(saved.getId(), saved.getAsset().getId(), saved.getEmployee().getId());
     }
 
-    public List<AssignedAssetDTO> getAllAssignedAssets() {
-        return assignedAssetRepository.findAll().stream()
-                .map(aa -> new AssignedAssetDTO(aa.getId(), aa.getAsset().getId(), aa.getEmployee().getId()))
-                .collect(Collectors.toList());
+    public List<AssignedAsset> getAllAssignedAssets() {
+        return assignedAssetRepository.findAll();
     }
 
     public AssignedAssetDTO getById(int id) {
@@ -53,10 +51,8 @@ public class AssignedAssetService {
         return "Assigned asset with ID " + id + " has been deleted.";
     }
 
-    public List<AssignedAssetDTO> getByEmployeeId(int employeeId) {
-        return assignedAssetRepository.findByEmployeeId(employeeId).stream()
-                .map(aa -> new AssignedAssetDTO(aa.getId(), aa.getAsset().getId(), aa.getEmployee().getId()))
-                .collect(Collectors.toList());
+    public List<AssignedAsset> getByEmployeeId(int employeeId) {
+        return assignedAssetRepository.findByEmployeeId(employeeId);
     }
 
     public List<AssignedAssetDTO> getByAssetId(int assetId) {

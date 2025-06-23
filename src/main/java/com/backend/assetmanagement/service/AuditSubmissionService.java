@@ -1,6 +1,4 @@
 package com.backend.assetmanagement.service;
-
-import com.backend.assetmanagement.dto.AuditSubmissionDTO;
 import com.backend.assetmanagement.enums.OperationalState;
 import com.backend.assetmanagement.exception.ResourceNotFoundException;
 import com.backend.assetmanagement.model.AuditSubmission;
@@ -10,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class AuditSubmissionService {
@@ -18,37 +15,34 @@ public class AuditSubmissionService {
     @Autowired
     private AuditSubmissionRepository auditSubmissionRepository;
 
-    public AuditSubmissionDTO createAuditSubmission(AuditSubmissionDTO dto) {
-        AuditSubmission submission = new AuditSubmission();
-        submission.setAuditId(dto.getAuditId());
-        submission.setOperationalState(dto.getOperationalState() != null ? dto.getOperationalState() : OperationalState.working);
-        submission.setComments(dto.getComments());
+    public AuditSubmission createAuditSubmission(AuditSubmission submission) {
+        submission.setOperationalState(submission.getOperationalState() != null
+                ? submission.getOperationalState()
+                : OperationalState.working);
+
         submission.setSubmittedAt(LocalDateTime.now());
-
-        AuditSubmission saved = auditSubmissionRepository.save(submission);
-        return convertToDTO(saved);
+        return auditSubmissionRepository.save(submission);
     }
 
-    public List<AuditSubmissionDTO> getAllAuditSubmissions() {
-        return auditSubmissionRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
+    public List<AuditSubmission> getAllAuditSubmissions() {
+        return auditSubmissionRepository.findAll();
     }
 
-    public AuditSubmissionDTO getAuditSubmissionById(int id) {
-        AuditSubmission submission = auditSubmissionRepository.findById(id)
+    public AuditSubmission getAuditSubmissionById(int id) {
+        return auditSubmissionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("AuditSubmission not found with ID: " + id));
-        return convertToDTO(submission);
     }
 
-    public AuditSubmissionDTO updateAuditSubmission(int id, AuditSubmissionDTO dto) {
+    public AuditSubmission updateAuditSubmission(int id, AuditSubmission submission) {
         AuditSubmission existing = auditSubmissionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("AuditSubmission not found with ID: " + id));
 
-        existing.setAuditId(dto.getAuditId());
-        existing.setOperationalState(dto.getOperationalState());
-        existing.setComments(dto.getComments());
+        existing.setAuditId(submission.getAuditId());
+        existing.setOperationalState(submission.getOperationalState());
+        existing.setComments(submission.getComments());
         existing.setSubmittedAt(LocalDateTime.now());
 
-        return convertToDTO(auditSubmissionRepository.save(existing));
+        return auditSubmissionRepository.save(existing);
     }
 
     public String deleteAuditSubmission(int id) {
@@ -58,26 +52,15 @@ public class AuditSubmissionService {
         return "Audit submission with ID " + id + " deleted successfully.";
     }
 
-    public AuditSubmissionDTO getSubmissionsByAuditId(int auditId) {
-        AuditSubmission submission = auditSubmissionRepository.findByAuditId(auditId);
-        return convertToDTO(submission);
+    public AuditSubmission getSubmissionsByAuditId(int auditId) {
+        return auditSubmissionRepository.findByAuditId(auditId);
     }
 
-    public List<AuditSubmissionDTO> getSubmissionsByEmployeeId(int employeeId) {
+    public List<AuditSubmission> getSubmissionsByEmployeeId(int employeeId) {
         List<AuditSubmission> submissions = auditSubmissionRepository.findByEmployeeId(employeeId);
         if (submissions.isEmpty()) {
             throw new ResourceNotFoundException("No submissions found for employee ID: " + employeeId);
         }
-        return submissions.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-
-    private AuditSubmissionDTO convertToDTO(AuditSubmission submission) {
-        AuditSubmissionDTO dto = new AuditSubmissionDTO();
-        dto.setId(submission.getId());
-        dto.setAuditId(submission.getAuditId());
-        dto.setOperationalState(submission.getOperationalState());
-        dto.setSubmittedAt(submission.getSubmittedAt());
-        dto.setComments(submission.getComments());
-        return dto;
+        return submissions;
     }
 }

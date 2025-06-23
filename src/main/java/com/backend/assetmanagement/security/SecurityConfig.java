@@ -21,10 +21,12 @@ public class SecurityConfig {
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
 				.csrf((csrf) -> csrf.disable())
+				.cors(Customizer.withDefaults())
 				.authorizeHttpRequests(authorize -> authorize
 						.requestMatchers("/api/employee/register", "/api/employee/login").permitAll()
 						.requestMatchers("/api/admin/register", "/api/admin/login").permitAll()
 						.requestMatchers("/api/admin/all").hasAuthority("ADMIN")
+						.requestMatchers("/api/auth/login","/api/auth/register").permitAll()
 						.anyRequest().authenticated()
 				)
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

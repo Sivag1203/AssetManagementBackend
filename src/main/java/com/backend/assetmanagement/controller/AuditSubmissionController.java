@@ -1,12 +1,11 @@
 package com.backend.assetmanagement.controller;
 
-import com.backend.assetmanagement.dto.AuditSubmissionDTO;
+import com.backend.assetmanagement.model.AuditSubmission;
 import com.backend.assetmanagement.service.AuditSubmissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 @RestController
 @RequestMapping("/api/audit-submission")
 public class AuditSubmissionController {
@@ -15,23 +14,23 @@ public class AuditSubmissionController {
     private AuditSubmissionService auditSubmissionService;
 
     @PostMapping("/add")
-    public AuditSubmissionDTO createAuditSubmission(@RequestBody AuditSubmissionDTO dto) {
-        return auditSubmissionService.createAuditSubmission(dto);
+    public AuditSubmission createAuditSubmission(@RequestBody AuditSubmission submission) {
+        return auditSubmissionService.createAuditSubmission(submission);
     }
 
     @GetMapping("/all")
-    public List<AuditSubmissionDTO> getAllSubmissions() {
+    public List<AuditSubmission> getAllSubmissions() {
         return auditSubmissionService.getAllAuditSubmissions();
     }
 
     @GetMapping("/{id}")
-    public AuditSubmissionDTO getById(@PathVariable int id) {
+    public AuditSubmission getById(@PathVariable int id) {
         return auditSubmissionService.getAuditSubmissionById(id);
     }
 
     @PutMapping("/update/{id}")
-    public AuditSubmissionDTO updateSubmission(@PathVariable int id, @RequestBody AuditSubmissionDTO dto) {
-        return auditSubmissionService.updateAuditSubmission(id, dto);
+    public AuditSubmission updateSubmission(@PathVariable int id, @RequestBody AuditSubmission submission) {
+        return auditSubmissionService.updateAuditSubmission(id, submission);
     }
 
     @DeleteMapping("/delete/{id}")
@@ -40,12 +39,12 @@ public class AuditSubmissionController {
     }
 
     @GetMapping("/audit/{auditId}")
-    public AuditSubmissionDTO getByAuditId(@PathVariable int auditId) {
+    public AuditSubmission getByAuditId(@PathVariable int auditId) {
         return auditSubmissionService.getSubmissionsByAuditId(auditId);
     }
 
     @GetMapping("/employee/{employeeId}")
-    public List<AuditSubmissionDTO> getByEmployeeId(@PathVariable int employeeId) {
+    public List<AuditSubmission> getByEmployeeId(@PathVariable int employeeId) {
         return auditSubmissionService.getSubmissionsByEmployeeId(employeeId);
     }
 }

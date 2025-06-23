@@ -31,7 +31,7 @@ public class EmployeeServiceTest {
     private AuthRepository authRepository;
 
     private Employee employee;
-    private EmployeeDTO employeeDTO;
+    private Employee employeeDTO;
     private Auth auth;
 
     @BeforeEach
@@ -54,7 +54,7 @@ public class EmployeeServiceTest {
         employee.setLevel(Level.L1);
         employee.setAuth(auth);
 
-        employeeDTO = new EmployeeDTO();
+        employeeDTO = new Employee();
         employeeDTO.setId(1);
         employeeDTO.setName("John");
         employeeDTO.setEmail("john@example.com");
@@ -70,7 +70,7 @@ public class EmployeeServiceTest {
         when(authRepository.save(any(Auth.class))).thenReturn(auth);
         when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
 
-        EmployeeDTO saved = employeeService.addEmployee(employeeDTO);
+        Employee saved = employeeService.addEmployee(employeeDTO);
 
         assertEquals("John", saved.getName());
         assertEquals(Level.L1, saved.getLevel());

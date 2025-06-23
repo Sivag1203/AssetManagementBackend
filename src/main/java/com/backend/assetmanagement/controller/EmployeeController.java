@@ -2,6 +2,7 @@ package com.backend.assetmanagement.controller;
 
 import com.backend.assetmanagement.dto.EmployeeDTO;
 import com.backend.assetmanagement.model.Auth;
+import com.backend.assetmanagement.model.Employee;
 import com.backend.assetmanagement.repository.AuthRepository;
 import com.backend.assetmanagement.security.CustomUserDetailsService;
 import com.backend.assetmanagement.security.JwtUtil;
@@ -14,11 +15,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/employee")
+@CrossOrigin(origins = "http://localhost:5173/")
 public class EmployeeController {
 
     @Autowired
@@ -37,12 +41,12 @@ public class EmployeeController {
     private CustomUserDetailsService customUserDetailsService;
 
     @PostMapping("/add")
-    public EmployeeDTO addEmployee(@RequestBody EmployeeDTO dto) {
-        return employeeService.addEmployee(dto);
+    public Employee addEmployee(@RequestBody Employee employee) {
+        return employeeService.addEmployee(employee);
     }
 
     @GetMapping("/all")
-    public List<EmployeeDTO> getAllEmployees() {
+    public List<Employee> getAllEmployees() {
         return employeeService.getAllEmployees();
     }
 
@@ -52,8 +56,8 @@ public class EmployeeController {
     }
 
     @PutMapping("/update/{id}")
-    public EmployeeDTO updateEmployee(@PathVariable int id, @RequestBody EmployeeDTO dto) {
-        return employeeService.updateEmployee(id, dto);
+    public Employee updateEmployee(@PathVariable int id, @RequestBody Employee employee) {
+        return employeeService.updateEmployee(id, employee);
     }
 
     @DeleteMapping("/delete/{id}")
@@ -62,10 +66,10 @@ public class EmployeeController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<EmployeeDTO> register(@RequestBody EmployeeDTO dto) {
+    public ResponseEntity<Employee> register(@RequestBody Employee dto) {
         String encodedPassword = passwordEncoder.encode(dto.getAuth().getPassword());
         dto.getAuth().setPassword(encodedPassword);
-        EmployeeDTO saved = employeeService.addEmployee(dto);
+        Employee saved = employeeService.addEmployee(dto);
         return ResponseEntity.ok(saved);
     }
 
@@ -83,5 +87,21 @@ public class EmployeeController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed: " + e.getMessage());
         }
+    }
+    
+    @GetMapping("/details")
+    public ResponseEntity<Map<String, Object>> getLoggedInEmployeeDetails(Principal principal) {
+        String email = principal.getName();
+        Employee employee = employeeService.getEmployeeByEmail(email);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", employee.getId());
+        response.put("name", employee.getName());
+        response.put("email", employee.getEmail());
+        response.put("phone", employee.getPhone());
+        response.put("department", employee.getDepartment());
+        response.put("address", employee.getAddress());
+        response.put("role", employee.getAuth().getRole());
+        return ResponseEntity.ok(response);
     }
 }

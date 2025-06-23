@@ -1,58 +1,45 @@
 package com.backend.assetmanagement.service;
 
 import com.backend.assetmanagement.dto.EmployeeDTO;
+import com.backend.assetmanagement.enums.Level;
 import com.backend.assetmanagement.exception.ResourceNotFoundException;
 import com.backend.assetmanagement.model.Auth;
 import com.backend.assetmanagement.model.Employee;
 import com.backend.assetmanagement.repository.AuthRepository;
 import com.backend.assetmanagement.repository.EmployeeRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final AuthRepository authRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
 
     public EmployeeService(EmployeeRepository employeeRepository, AuthRepository authRepository) {
         this.employeeRepository = employeeRepository;
         this.authRepository = authRepository;
     }
 
-    public EmployeeDTO addEmployee(EmployeeDTO dto) {
-        Auth savedAuth = authRepository.save(dto.getAuth());
-
-        Employee employee = new Employee();
-        employee.setName(dto.getName());
-        employee.setEmail(dto.getEmail());
-        employee.setPhone(dto.getPhone());
-        employee.setAddress(dto.getAddress());
-        employee.setDepartment(dto.getDepartment());
-        employee.setLevel(dto.getLevel());
+    public Employee addEmployee(Employee employee) {
+        Auth auth = employee.getAuth();
+        auth.setPassword(passwordEncoder.encode(auth.getPassword()));
+        Auth savedAuth = authRepository.save(auth);
         employee.setAuth(savedAuth);
-
-        Employee saved = employeeRepository.save(employee);
-        dto.setId(saved.getId());
-        return dto;
+        return employeeRepository.save(employee);
     }
 
-    public List<EmployeeDTO> getAllEmployees() {
-        return employeeRepository.findAll().stream().map(emp -> {
-            EmployeeDTO dto = new EmployeeDTO();
-            dto.setId(emp.getId());
-            dto.setName(emp.getName());
-            dto.setEmail(emp.getEmail());
-            dto.setPhone(emp.getPhone());
-            dto.setDepartment(emp.getDepartment());
-            dto.setAddress(emp.getAddress());
-            dto.setLevel(emp.getLevel());
-            dto.setAuth(emp.getAuth());
-            return dto;
-        }).collect(Collectors.toList());
+    public List<Employee> getAllEmployees() {
+        return employeeRepository.findAll();
     }
+
 
     public EmployeeDTO getEmployeeById(int id) {
         Employee emp = employeeRepository.findById(id)
@@ -69,28 +56,47 @@ public class EmployeeService {
         return dto;
     }
 
-    public EmployeeDTO updateEmployee(int id, EmployeeDTO dto) {
+    public Employee updateEmployee(int id, Employee updatedEmployee) {
+        if (updatedEmployee == null) {
+            throw new IllegalArgumentException("Updated employee details cannot be null");
+        }
+
+        if (updatedEmployee.getName() == null || updatedEmployee.getName().isEmpty()) {
+            throw new IllegalArgumentException("Name is required");
+        }
+
         Employee existing = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
 
-        existing.setName(dto.getName());
-        existing.setEmail(dto.getEmail());
-        existing.setPhone(dto.getPhone());
-        existing.setDepartment(dto.getDepartment());
-        existing.setAddress(dto.getAddress());
-        existing.setLevel(dto.getLevel());
+        // Update basic fields
+        existing.setName(updatedEmployee.getName());
+        existing.setEmail(updatedEmployee.getEmail());
+        existing.setPhone(updatedEmployee.getPhone());
+        existing.setDepartment(updatedEmployee.getDepartment());
+        existing.setAddress(updatedEmployee.getAddress());
 
-        Auth updatedAuth = dto.getAuth();
-        Auth existingAuth = existing.getAuth();
-        existingAuth.setEmail(updatedAuth.getEmail());
-        existingAuth.setPassword(updatedAuth.getPassword());
-        existingAuth.setRole(updatedAuth.getRole());
+        Auth updatedAuth = updatedEmployee.getAuth();
+        if (updatedAuth != null) {
+            Auth existingAuth = existing.getAuth();
 
-        authRepository.save(existingAuth);
-        Employee saved = employeeRepository.save(existing);
+            existingAuth.setEmail(updatedAuth.getEmail());
 
-        dto.setId(saved.getId());
-        return dto;
+            String incomingPassword = updatedAuth.getPassword();
+            boolean isEncoded = incomingPassword != null && incomingPassword.startsWith("$2");
+
+            if (!isEncoded && incomingPassword != null && !incomingPassword.isEmpty()) {
+                // New raw password -> encode and save
+                existingAuth.setPassword(passwordEncoder.encode(incomingPassword));
+            } else {
+                // Already encoded or unchanged -> keep existing password
+                existingAuth.setPassword(existingAuth.getPassword());
+            }
+
+            existingAuth.setRole(updatedAuth.getRole());
+            authRepository.save(existingAuth);
+        }
+
+        return employeeRepository.save(existing);
     }
 
     public String deleteEmployee(int id) {
@@ -98,5 +104,13 @@ public class EmployeeService {
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
         employeeRepository.delete(emp);
         return "Employee with id " + id + " deleted successfully.";
+    }
+    
+    public Employee getEmployeeByEmail(String email) {
+        Employee employee = employeeRepository.findByAuthEmail(email);
+        if (employee == null) {
+            throw new RuntimeException("Employee not found with email: " + email);
+        }
+        return employee;
     }
 }

@@ -17,6 +17,9 @@ public class AssetCategoryService {
     }
 
     public AssetCategory addCategory(AssetCategory category) {
+        if (category.getName() == null || category.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Category name cannot be empty.");
+        }
         return assetCategoryRepository.save(category);
     }
 
@@ -30,6 +33,10 @@ public class AssetCategoryService {
     }
 
     public AssetCategory updateCategory(int id, AssetCategory updatedCategory) {
+        if (updatedCategory.getName() == null || updatedCategory.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Category name cannot be empty.");
+        }
+
         AssetCategory existing = getCategoryById(id);
         existing.setName(updatedCategory.getName());
         return assetCategoryRepository.save(existing);

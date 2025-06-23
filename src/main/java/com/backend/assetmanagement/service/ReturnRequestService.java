@@ -15,7 +15,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ReturnRequestService {
@@ -32,29 +34,15 @@ public class ReturnRequestService {
     @Autowired
     private AssetRepository assetRepository;
 
-    public ReturnRequestDTO createRequest(ReturnRequestDTO dto) {
-        Employee employee = employeeRepository.findById(dto.getEmployeeId())
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
-        Asset asset = assetRepository.findById(dto.getAssetId())
-                .orElseThrow(() -> new RuntimeException("Asset not found"));
-
-        ReturnRequest request = new ReturnRequest();
-        request.setEmployee(employee);
-        request.setAsset(asset);
-        request.setStatus(ReturnStatus.pending);
-        request.setRequestDate(LocalDate.now());
-
-        ReturnRequest saved = returnRequestRepository.save(request);
-        return convertToDTO(saved);
+    public ReturnRequest createRequest(ReturnRequest dto) {
+        dto.setStatus(ReturnStatus.pending);
+        dto.setRequestDate(LocalDate.now());
+        return returnRequestRepository.save(dto);
     }
 
-    public List<ReturnRequestDTO> getAllRequests() {
-        List<ReturnRequest> requests = returnRequestRepository.findAll();
-        List<ReturnRequestDTO> dtos = new ArrayList<>();
-        for (ReturnRequest request : requests) {
-            dtos.add(convertToDTO(request));
-        }
-        return dtos;
+    public List<ReturnRequest> getAllRequests() {
+
+        return returnRequestRepository.findAll();
     }
 
     public ReturnRequestDTO approveRequest(int id) {
@@ -79,13 +67,8 @@ public class ReturnRequestService {
         return "Return request rejected and deleted.";
     }
 
-    public List<ReturnRequestDTO> getRequestsByEmployee(int employeeId) {
-        List<ReturnRequest> requests = returnRequestRepository.findByEmployeeId(employeeId);
-        List<ReturnRequestDTO> dtos = new ArrayList<>();
-        for (ReturnRequest request : requests) {
-            dtos.add(convertToDTO(request));
-        }
-        return dtos;
+    public List<ReturnRequest> getRequestsByEmployee(int employeeId) {
+        return returnRequestRepository.findByEmployeeId(employeeId);
     }
 
     private ReturnRequestDTO convertToDTO(ReturnRequest request) {
@@ -98,5 +81,14 @@ public class ReturnRequestService {
         dto.setStatus(request.getStatus());
         dto.setRequestDate(request.getRequestDate());
         return dto;
+    }
+    
+    public Map<String, Long> getStatusCounts() {
+        List<Object[]> results = returnRequestRepository.countGroupedByStatus();
+        Map<String, Long> map = new HashMap<>();
+        for (Object[] obj : results) {
+            map.put(obj[0].toString(), (Long) obj[1]);
+        }
+        return map;
     }
 }
