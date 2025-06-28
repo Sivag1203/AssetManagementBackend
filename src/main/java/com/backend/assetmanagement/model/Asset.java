@@ -1,6 +1,7 @@
 package com.backend.assetmanagement.model;
 
 import com.backend.assetmanagement.enums.AssetStatus;
+import com.backend.assetmanagement.enums.Level;
 
 import jakarta.persistence.*;
 
@@ -24,7 +25,8 @@ public class Asset {
     private AssetStatus status = AssetStatus.available;
     
     @Column(name = "eligibility_level")
-    private String eligibilityLevel;
+    @Enumerated(EnumType.STRING)
+    private Level eligibilityLevel;
 
     public int getId() {
         return id;
@@ -66,11 +68,11 @@ public class Asset {
         this.status = status;
     }
     
-    public String getEligibilityLevel() {
+    public Level getEligibilityLevel() {
 		return eligibilityLevel;
 	}
 
-	public void setEligibilityLevel(String eligibilityLevel) {
+	public void setEligibilityLevel(Level eligibilityLevel) {
 		this.eligibilityLevel = eligibilityLevel;
 	}
 

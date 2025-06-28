@@ -52,4 +52,12 @@ public class AssetController {
     public List<Asset> getEligibleAssets(Principal principal) {
         return assetService.getEligibleAssetsForEmployee(principal.getName());
     }
+    
+    @GetMapping("/eligible-paged")
+    public List<Asset> getEligibleAssetsPaged(
+            Principal principal,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size) {
+        return assetService.getEligibleAssetsPaged(principal.getName(), page, size);
+    }
 }

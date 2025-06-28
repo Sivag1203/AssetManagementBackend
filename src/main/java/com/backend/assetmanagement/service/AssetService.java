@@ -3,6 +3,8 @@ package com.backend.assetmanagement.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.backend.assetmanagement.dto.AssetDTO;
@@ -35,7 +37,7 @@ public class AssetService {
         if (asset.getSpecs() == null || asset.getSpecs().trim().isEmpty()) {
             throw new IllegalArgumentException("Specs cannot be empty.");
         }
-        if (asset.getEligibilityLevel() == null || asset.getEligibilityLevel().trim().isEmpty()) {
+        if (asset.getEligibilityLevel() == null) {
             throw new IllegalArgumentException("Eligibility level cannot be empty.");
         }
 
@@ -71,7 +73,7 @@ public class AssetService {
         if (updatedAsset.getSpecs() == null || updatedAsset.getSpecs().trim().isEmpty()) {
             throw new IllegalArgumentException("Specs cannot be empty.");
         }
-        if (updatedAsset.getEligibilityLevel() == null || updatedAsset.getEligibilityLevel().trim().isEmpty()) {
+        if (updatedAsset.getEligibilityLevel() == null) {
             throw new IllegalArgumentException("Eligibility level cannot be empty.");
         }
 
@@ -97,5 +99,11 @@ public class AssetService {
         if (employee == null) return List.of(); 
         List<Asset> assets = assetRepo.findEligibleAssetsForLevel(employee.getLevel().name());
         return assets;
+    }
+    
+    public List<Asset> getEligibleAssetsPaged(String email, int page, int size) {
+    	Employee employee = employeeRepo.findByEmail(email);
+        Pageable pageable = PageRequest.of(page, size);
+        return assetRepo.findByEligibilityLevelLessThanEqual(employee.getLevel(), pageable).getContent();
     }
 }

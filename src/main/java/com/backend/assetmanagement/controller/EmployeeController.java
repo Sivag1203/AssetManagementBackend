@@ -1,6 +1,5 @@
 package com.backend.assetmanagement.controller;
 
-import com.backend.assetmanagement.dto.EmployeeDTO;
 import com.backend.assetmanagement.model.Auth;
 import com.backend.assetmanagement.model.Employee;
 import com.backend.assetmanagement.repository.AuthRepository;
@@ -20,10 +19,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 @RequestMapping("/api/employee")
 @CrossOrigin(origins = "http://localhost:5173")
 public class EmployeeController {
+	
+	private static final Logger logger = LoggerFactory.getLogger("EmployeeController"); 
 
     @Autowired
     private EmployeeService employeeService;
@@ -57,7 +61,13 @@ public class EmployeeController {
 
     @PutMapping("/update/{id}")
     public Employee updateEmployee(@PathVariable int id, @RequestBody Employee employee) {
-        return employeeService.updateEmployee(id, employee);
+//        return employeeService.updateEmployee(id, employee);
+    	 	logger.info("UPDATE request for employee id={}  body={}", id, employee);
+
+    	    Employee updated = employeeService.updateEmployee(id, employee);
+
+    	    logger.info("SUCCESSFULLY updated employee id={}", updated.getId());
+    	    return updated;
     }
 
     @DeleteMapping("/delete/{id}")

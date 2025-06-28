@@ -1,6 +1,7 @@
 package com.backend.assetmanagement;
 
 import com.backend.assetmanagement.enums.AssetStatus;
+import com.backend.assetmanagement.enums.Level;
 import com.backend.assetmanagement.exception.ResourceNotFoundException;
 import com.backend.assetmanagement.model.Asset;
 import com.backend.assetmanagement.model.AssetCategory;
@@ -45,13 +46,13 @@ class AssetServiceTest {
         sample.setId(1);
         sample.setSerialNumber("SN123");
         sample.setSpecs("8 GB RAM");
-        sample.setEligibilityLevel("L1");
+        sample.setEligibilityLevel(Level.L1);
         sample.setStatus(AssetStatus.available);
 
         updatePayload = new Asset();
         updatePayload.setSerialNumber("NewSN");
         updatePayload.setSpecs("New Specs");
-        updatePayload.setEligibilityLevel("L2");
+        updatePayload.setEligibilityLevel(Level.L2);
         updatePayload.setStatus(AssetStatus.not_available);
     }
 
