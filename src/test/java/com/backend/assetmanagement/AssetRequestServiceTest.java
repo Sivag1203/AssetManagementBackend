@@ -1,14 +1,7 @@
 package com.backend.assetmanagement;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
 import com.backend.assetmanagement.enums.RequestStatus;
+import com.backend.assetmanagement.exception.ResourceNotFoundException;
 import com.backend.assetmanagement.model.Asset;
 import com.backend.assetmanagement.model.AssetRequest;
 import com.backend.assetmanagement.model.AssignedAsset;
@@ -16,115 +9,113 @@ import com.backend.assetmanagement.model.Employee;
 import com.backend.assetmanagement.repository.AssetRequestRepository;
 import com.backend.assetmanagement.repository.AssignedAssetRepository;
 import com.backend.assetmanagement.service.AssetRequestService;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-public class AssetRequestServiceTest {
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+class AssetRequestServiceTest {
 
     @Mock
-    private AssetRequestRepository assetRequestRepository;
-
+    private AssetRequestRepository requestRepo;
     @Mock
-    private AssignedAssetRepository assignedAssetRepository;
+    private AssignedAssetRepository assignedRepo;
 
     @InjectMocks
-    private AssetRequestService assetRequestService;
+    private AssetRequestService service;
 
     private AutoCloseable closeable;
-
-    private AssetRequest assetRequest;
-    private Employee employee;
+    private AssetRequest req;
+    private Employee emp;
     private Asset asset;
 
     @BeforeEach
-    void setUp() {
+    void init() {
         closeable = MockitoAnnotations.openMocks(this);
 
-        employee = new Employee();
-        employee.setId(1);
+        emp = new Employee();
+        emp.setId(1);
 
         asset = new Asset();
         asset.setId(1);
 
-        assetRequest = new AssetRequest();
-        assetRequest.setId(1);
-        assetRequest.setEmployee(employee);
-        assetRequest.setAsset(asset);
-        assetRequest.setStatus(RequestStatus.pending);
-        assetRequest.setRequestDate(LocalDate.now());
+        req = new AssetRequest();
+        req.setId(1);
+        req.setEmployee(emp);
+        req.setAsset(asset);
+        req.setStatus(RequestStatus.pending);
+        req.setRequestDate(LocalDate.now());
     }
 
     @AfterEach
-    void tearDown() throws Exception {
-        assetRequest = null;
-        employee = null;
-        asset = null;
+    void clean() throws Exception {
         closeable.close();
     }
 
     @Test
-    void testCreateRequest() {
-        when(assetRequestRepository.save(any(AssetRequest.class))).thenReturn(assetRequest);
+    void createRequest_success() {
+        when(requestRepo.save(any(AssetRequest.class))).thenReturn(req);
 
-        AssetRequest result = assetRequestService.createRequest(assetRequest);
+        AssetRequest saved = service.createRequest(req);
 
-        assertEquals(RequestStatus.pending, result.getStatus());
-        assertNotNull(result.getRequestDate());
-        assertEquals(1, result.getEmployee().getId());
+        assertEquals(RequestStatus.pending, saved.getStatus());
+        assertNotNull(saved.getRequestDate());
+        assertEquals(1, saved.getEmployee().getId());
     }
 
     @Test
-    void testApproveRequest_Success() {
-        when(assetRequestRepository.findById(1)).thenReturn(Optional.of(assetRequest));
-        when(assetRequestRepository.save(any(AssetRequest.class))).thenReturn(assetRequest);
-        when(assignedAssetRepository.save(any(AssignedAsset.class))).thenReturn(new AssignedAsset());
+    void approveRequest_success() {
+        when(requestRepo.findById(1)).thenReturn(Optional.of(req));
+        when(requestRepo.save(any(AssetRequest.class))).thenReturn(req);
+        when(assignedRepo.save(any(AssignedAsset.class))).thenReturn(new AssignedAsset());
 
-        AssetRequest result = assetRequestService.approveRequest(1);
+        AssetRequest updated = service.approveRequest(1);
 
-        assertEquals(RequestStatus.approved, result.getStatus());
+        assertEquals(RequestStatus.approved, updated.getStatus());
     }
 
     @Test
-    void testApproveRequest_NotFound() {
-        when(assetRequestRepository.findById(99)).thenReturn(Optional.empty());
+    void approveRequest_notFound() {
+        when(requestRepo.findById(99)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> {
-            assetRequestService.approveRequest(99);
-        });
+        assertThrows(ResourceNotFoundException.class,
+                () -> service.approveRequest(99));
     }
 
     @Test
-    void testRejectRequest_Success() {
-        when(assetRequestRepository.findById(1)).thenReturn(Optional.of(assetRequest));
+    void rejectRequest_success() {
+        when(requestRepo.findById(1)).thenReturn(Optional.of(req));
 
-        String message = assetRequestService.rejectRequest(1);
+        String msg = service.rejectRequest(1);
 
-        verify(assetRequestRepository, times(1)).delete(assetRequest);
-        assertEquals("Request rejected and deleted", message);
+        verify(requestRepo).delete(req);
+        assertEquals("Request 1 rejected & removed.", msg);
     }
 
     @Test
-    void testRejectRequest_NotFound() {
-        when(assetRequestRepository.findById(99)).thenReturn(Optional.empty());
+    void rejectRequest_notFound() {
+        when(requestRepo.findById(99)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> {
-            assetRequestService.rejectRequest(99);
-        });
+        assertThrows(ResourceNotFoundException.class,
+                () -> service.rejectRequest(99));
     }
 
     @Test
-    void testGetRequestsByEmployee() {
-        when(assetRequestRepository.findByEmployeeId(1)).thenReturn(Arrays.asList(assetRequest));
+    void getRequestsByEmployee() {
+        when(requestRepo.findByEmployeeId(1)).thenReturn(Arrays.asList(req));
 
-        List<?> result = assetRequestService.getRequestsByEmployee(1);
+        List<AssetRequest> list = service.getRequestsByEmployee(1);
 
-        assertEquals(1, result.size());
+        assertEquals(1, list.size());
+        assertEquals(1, list.get(0).getId());
     }
 }

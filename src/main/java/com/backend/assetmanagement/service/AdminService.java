@@ -56,14 +56,14 @@ public class AdminService {
         return AdminDTO.fromEntityList(admins);
     }
 
-    public AdminDTO getAdminById(int id) {
+    public Admin getAdminById(int id) {
         if (id <= 0) {
             throw new IllegalArgumentException("Invalid admin ID");
         }
 
         Admin admin = adminRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
-        return AdminDTO.fromEntity(admin);
+        return admin;
     }
 
     public Admin updateAdmin(int id, Admin updatedAdmin) {

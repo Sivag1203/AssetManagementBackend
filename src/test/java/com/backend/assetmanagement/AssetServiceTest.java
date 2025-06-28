@@ -1,18 +1,5 @@
 package com.backend.assetmanagement;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import com.backend.assetmanagement.enums.AssetStatus;
 import com.backend.assetmanagement.exception.ResourceNotFoundException;
 import com.backend.assetmanagement.model.Asset;
@@ -20,9 +7,17 @@ import com.backend.assetmanagement.model.AssetCategory;
 import com.backend.assetmanagement.repository.AssetCategoryRepository;
 import com.backend.assetmanagement.repository.AssetRepository;
 import com.backend.assetmanagement.service.AssetService;
+import org.junit.jupiter.api.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-@SpringBootTest
-public class AssetServiceTest {
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class AssetServiceTest {
 
     @Mock
     private AssetRepository assetRepo;
@@ -31,100 +26,96 @@ public class AssetServiceTest {
     private AssetCategoryRepository categoryRepo;
 
     @InjectMocks
-    private AssetService assetService;
+    private AssetService service;
 
     private AutoCloseable closeable;
 
-    private Asset sampleAsset;
-    private Asset updatedAsset;
-    private AssetCategory sampleCategory;
+    private AssetCategory category;   // reused across tests
+    private Asset sample;             // existing asset
+    private Asset updatePayload;      // asset used for update
 
     @BeforeEach
-    void setUp() {
+    void init() {
         closeable = MockitoAnnotations.openMocks(this);
 
-        sampleAsset = new Asset();
-        sampleAsset.setId(1);
-        sampleAsset.setSerialNumber("SN123");
-        sampleAsset.setSpecs("8GB RAM");
-        sampleAsset.setStatus(AssetStatus.available);
+        category = new AssetCategory();
+        category.setId(1);
 
-        updatedAsset = new Asset();
-        updatedAsset.setSerialNumber("NewSN");
-        updatedAsset.setSpecs("New Specs");
-        updatedAsset.setStatus(AssetStatus.not_available);
+        sample = new Asset();
+        sample.setId(1);
+        sample.setSerialNumber("SN123");
+        sample.setSpecs("8 GB RAM");
+        sample.setEligibilityLevel("L1");
+        sample.setStatus(AssetStatus.available);
 
-        sampleCategory = new AssetCategory();
-        sampleCategory.setId(1);
+        updatePayload = new Asset();
+        updatePayload.setSerialNumber("NewSN");
+        updatePayload.setSpecs("New Specs");
+        updatePayload.setEligibilityLevel("L2");
+        updatePayload.setStatus(AssetStatus.not_available);
     }
 
     @AfterEach
-    void tearDown() throws Exception {
-        sampleAsset = null;
-        updatedAsset = null;
-        sampleCategory = null;
-
+    void cleanup() throws Exception {
         closeable.close();
     }
 
+
     @Test
-    void testAddAsset_Success() {
-        when(categoryRepo.findById(1)).thenReturn(Optional.of(sampleCategory));
+    void addAsset_success() {
+        when(categoryRepo.findById(1)).thenReturn(Optional.of(category));
+        when(assetRepo.save(sample)).thenReturn(sample);
 
-        when(assetRepo.save(sampleAsset)).thenReturn(sampleAsset);
+        Asset saved = service.addAsset(1, sample);
 
-        Asset result = assetService.addAsset(1, sampleAsset);
-
-        assertEquals("SN123", result.getSerialNumber());
-        assertEquals("8GB RAM", result.getSpecs());
+        assertEquals("SN123", saved.getSerialNumber());
+        assertEquals("8 GB RAM", saved.getSpecs());
+        assertEquals("L1", saved.getEligibilityLevel());
     }
 
     @Test
-    void testAddAsset_CategoryNotFound() {
+    void addAsset_categoryNotFound() {
         when(categoryRepo.findById(99)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            assetService.addAsset(99, sampleAsset);
-        });
+        assertThrows(ResourceNotFoundException.class,
+                () -> service.addAsset(99, sample));
     }
 
     @Test
-    void testUpdateAsset_Success() {
-        when(assetRepo.findById(1)).thenReturn(Optional.of(sampleAsset));
+    void updateAsset_success() {
+        when(assetRepo.findById(1)).thenReturn(Optional.of(sample));
+        when(assetRepo.save(sample)).thenReturn(sample); // service updates the same instance
 
-        when(assetRepo.save(sampleAsset)).thenReturn(sampleAsset);
+        Asset updated = service.updateAsset(1, updatePayload);
 
-        Asset result = assetService.updateAsset(1, updatedAsset);
-
-        assertEquals("NewSN", result.getSerialNumber());
-        assertEquals("New Specs", result.getSpecs());
-        assertEquals(AssetStatus.not_available, result.getStatus());
+        assertEquals("NewSN",          updated.getSerialNumber());
+        assertEquals("New Specs",      updated.getSpecs());
+        assertEquals(AssetStatus.not_available, updated.getStatus());
+        assertEquals("L2",             updated.getEligibilityLevel());
     }
 
     @Test
-    void testUpdateAsset_NotFound() {
+    void updateAsset_notFound() {
         when(assetRepo.findById(55)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            assetService.updateAsset(55, updatedAsset);
-        });
+        assertThrows(ResourceNotFoundException.class,
+                () -> service.updateAsset(55, updatePayload));
     }
 
     @Test
-    void testDeleteAsset_Success() {
-        when(assetRepo.findById(5)).thenReturn(Optional.of(sampleAsset));
+    void deleteAsset_success() {
+        when(assetRepo.findById(5)).thenReturn(Optional.of(sample));
 
-        assetService.deleteAsset(5);
+        service.deleteAsset(5);
 
-        verify(assetRepo, times(1)).delete(sampleAsset);
+        verify(assetRepo).delete(sample);
     }
 
     @Test
-    void testDeleteAsset_NotFound() {
+    void deleteAsset_notFound() {
         when(assetRepo.findById(99)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            assetService.deleteAsset(99);
-        });
+        assertThrows(ResourceNotFoundException.class,
+                () -> service.deleteAsset(99));
     }
 }

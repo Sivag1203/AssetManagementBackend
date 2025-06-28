@@ -3,6 +3,7 @@ package com.backend.assetmanagement.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -21,8 +22,8 @@ public class SecurityConfig {
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
 				.csrf((csrf) -> csrf.disable())
-				.cors(Customizer.withDefaults())
 				.authorizeHttpRequests(authorize -> authorize
+						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 						.requestMatchers("/api/employee/register", "/api/employee/login").permitAll()
 						.requestMatchers("/api/admin/register", "/api/admin/login").permitAll()
 						.requestMatchers("/api/admin/all").hasAuthority("ADMIN")

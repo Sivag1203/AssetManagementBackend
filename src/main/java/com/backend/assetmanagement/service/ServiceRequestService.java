@@ -33,11 +33,11 @@ public class ServiceRequestService {
         return serviceRequestRepository.findByEmployeeId(employeeId);
     }
 
-    public ServiceRequestDTO approveRequest(int requestId) {
+    public ServiceRequest approveRequest(int requestId) {
         ServiceRequest request = serviceRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Service request not found"));
         request.setStatus(ServiceStatus.completed);
-        return convertToDTO(serviceRequestRepository.save(request));
+        return serviceRequestRepository.save(request);
     }
 
     public String rejectRequest(int requestId) {
@@ -47,12 +47,13 @@ public class ServiceRequestService {
         return "Service request rejected and deleted";
     }
     
-    public ServiceRequestDTO markInProgress(int requestId) {
-        ServiceRequest request = serviceRequestRepository.findById(requestId)
+    public ServiceRequest markInProgress(int requestId) {
+        ServiceRequest req = serviceRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Service request not found"));
-        request.setStatus(ServiceStatus.in_progress);
-        return convertToDTO(serviceRequestRepository.save(request));
+        req.setStatus(ServiceStatus.in_progress);
+        return serviceRequestRepository.save(req);
     }
+
 
     
     public Map<String, Long> getStatusCounts() {

@@ -45,7 +45,7 @@ public class ReturnRequestService {
         return returnRequestRepository.findAll();
     }
 
-    public ReturnRequestDTO approveRequest(int id) {
+    public ReturnRequest approveRequest(int id) {
         ReturnRequest request = returnRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
         request.setStatus(ReturnStatus.completed);
@@ -57,7 +57,7 @@ public class ReturnRequestService {
             assignedAssetRepository.delete(assignedAsset);
         }
 
-        return convertToDTO(request);
+        return request;
     }
 
     public String rejectRequest(int id) {

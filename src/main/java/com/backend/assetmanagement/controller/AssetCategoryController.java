@@ -10,7 +10,7 @@ import com.backend.assetmanagement.service.AssetCategoryService;
 
 @RestController
 @RequestMapping("/api/asset-category")
-@CrossOrigin(origins = "http://localhost:5173/")
+@CrossOrigin(origins = "http://localhost:5173")
 public class AssetCategoryController {
 
     @Autowired

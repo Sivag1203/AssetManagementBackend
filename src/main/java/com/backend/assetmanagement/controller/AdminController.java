@@ -21,7 +21,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = "http://localhost:5173/")
+@CrossOrigin(origins = "http://localhost:5173")
 public class AdminController {
 
     @Autowired
@@ -46,7 +46,7 @@ public class AdminController {
     }
 
     @GetMapping("/{id}")
-    public AdminDTO getAdminById(@PathVariable int id) {
+    public Admin getAdminById(@PathVariable int id) {
         return adminService.getAdminById(id);
     }
 

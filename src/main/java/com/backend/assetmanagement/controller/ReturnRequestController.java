@@ -12,6 +12,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/return-requests")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ReturnRequestController {
 
     @Autowired
@@ -28,7 +29,7 @@ public class ReturnRequestController {
     }
 
     @PutMapping("/approve/{id}")
-    public ReturnRequestDTO approveRequest(@PathVariable int id) {
+    public ReturnRequest approveRequest(@PathVariable int id) {
         return returnRequestService.approveRequest(id);
     }
 

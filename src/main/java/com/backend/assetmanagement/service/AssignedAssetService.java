@@ -25,25 +25,25 @@ public class AssignedAssetService {
     @Autowired
     private EmployeeRepository employeeRepository;
 
-    public AssignedAssetDTO assignAsset(AssignedAssetDTO dto) {
-        Asset asset = assetRepository.findById(dto.getAssetId()).orElseThrow();
-        Employee employee = employeeRepository.findById(dto.getEmployeeId()).orElseThrow();
+    public AssignedAsset assignAsset(AssignedAsset dto) {
+        Asset asset = assetRepository.findById(dto.getAsset().getId()).orElseThrow();
+        Employee employee = employeeRepository.findById(dto.getEmployee().getId()).orElseThrow();
 
         AssignedAsset assignedAsset = new AssignedAsset();
         assignedAsset.setAsset(asset);
         assignedAsset.setEmployee(employee);
 
         AssignedAsset saved = assignedAssetRepository.save(assignedAsset);
-        return new AssignedAssetDTO(saved.getId(), saved.getAsset().getId(), saved.getEmployee().getId());
+        return saved;
     }
 
     public List<AssignedAsset> getAllAssignedAssets() {
         return assignedAssetRepository.findAll();
     }
 
-    public AssignedAssetDTO getById(int id) {
+    public AssignedAsset getById(int id) {
         AssignedAsset aa = assignedAssetRepository.findById(id).orElseThrow();
-        return new AssignedAssetDTO(aa.getId(), aa.getAsset().getId(), aa.getEmployee().getId());
+        return aa;
     }
 
     public String deleteAssignedAsset(int id) {
@@ -55,14 +55,12 @@ public class AssignedAssetService {
         return assignedAssetRepository.findByEmployeeId(employeeId);
     }
 
-    public List<AssignedAssetDTO> getByAssetId(int assetId) {
-        return assignedAssetRepository.findByAssetId(assetId).stream()
-                .map(aa -> new AssignedAssetDTO(aa.getId(), aa.getAsset().getId(), aa.getEmployee().getId()))
-                .collect(Collectors.toList());
+    public List<AssignedAsset> getByAssetId(int assetId) {
+        return assignedAssetRepository.findByAssetId(assetId);
     }
 
-    public AssignedAssetDTO getByEmployeeAndAsset(int employeeId, int assetId) {
+    public AssignedAsset getByEmployeeAndAsset(int employeeId, int assetId) {
         AssignedAsset aa = assignedAssetRepository.findByEmployeeAndAsset(employeeId, assetId);
-        return new AssignedAssetDTO(aa.getId(), aa.getAsset().getId(), aa.getEmployee().getId());
+        return aa;
     }
 }

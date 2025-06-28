@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface ServiceRequestRepository extends JpaRepository<ServiceRequest, Integer> {
 
-    @Query("SELECT s FROM ServiceRequest s WHERE s.employee.id = :employeeId")
+    @Query("SELECT s FROM ServiceRequest s WHERE s.employee.id = ?1")
     List<ServiceRequest> findByEmployeeId(int employeeId);
     
     @Query("SELECT sr.status, COUNT(sr) FROM ServiceRequest sr GROUP BY sr.status")

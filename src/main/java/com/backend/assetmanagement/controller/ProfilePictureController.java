@@ -12,6 +12,7 @@ import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/profile-pic")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ProfilePictureController {
 
     @Autowired

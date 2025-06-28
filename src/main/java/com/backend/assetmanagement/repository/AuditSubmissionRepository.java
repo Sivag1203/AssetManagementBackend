@@ -12,8 +12,7 @@ public interface AuditSubmissionRepository extends JpaRepository<AuditSubmission
 
     @Query("SELECT a FROM AuditSubmission a WHERE a.auditId = ?1")
     AuditSubmission findByAuditId(int auditId);
-    
+
     @Query("SELECT a FROM AuditSubmission a JOIN Audit audit ON a.auditId = audit.id WHERE audit.employee.id = ?1")
-    	List<AuditSubmission> findByEmployeeId(int employeeId);
-    
+    List<AuditSubmission> findByEmployeeId(int employeeId);
 }

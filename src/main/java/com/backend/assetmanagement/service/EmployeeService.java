@@ -41,19 +41,10 @@ public class EmployeeService {
     }
 
 
-    public EmployeeDTO getEmployeeById(int id) {
+    public Employee getEmployeeById(int id) {
         Employee emp = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
-        EmployeeDTO dto = new EmployeeDTO();
-        dto.setId(emp.getId());
-        dto.setName(emp.getName());
-        dto.setEmail(emp.getEmail());
-        dto.setPhone(emp.getPhone());
-        dto.setDepartment(emp.getDepartment());
-        dto.setAddress(emp.getAddress());
-        dto.setLevel(emp.getLevel());
-        dto.setAuth(emp.getAuth());
-        return dto;
+        return emp;
     }
 
     public Employee updateEmployee(int id, Employee updatedEmployee) {

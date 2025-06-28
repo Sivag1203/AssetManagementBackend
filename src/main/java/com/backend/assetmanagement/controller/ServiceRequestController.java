@@ -1,6 +1,5 @@
 package com.backend.assetmanagement.controller;
 
-import com.backend.assetmanagement.dto.ServiceRequestDTO;
 import com.backend.assetmanagement.model.ServiceRequest;
 import com.backend.assetmanagement.service.ServiceRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +11,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/service-requests")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ServiceRequestController {
 
     @Autowired
@@ -33,7 +33,7 @@ public class ServiceRequestController {
     }
 
     @PutMapping("/approve/{id}")
-    public ServiceRequestDTO approveRequest(@PathVariable int id) {
+    public ServiceRequest approveRequest(@PathVariable int id) {
         return serviceRequestService.approveRequest(id);
     }
 
@@ -43,11 +43,10 @@ public class ServiceRequestController {
     }
     
     @PutMapping("/in-progress/{id}")
-    public ServiceRequestDTO markInProgress(@PathVariable int id) {
+    public ServiceRequest markInProgress(@PathVariable int id) {
         return serviceRequestService.markInProgress(id);
     }
 
-    
     @GetMapping("/status-counts")
     public ResponseEntity<Map<String, Long>> getStatusCounts() {
         return ResponseEntity.ok(serviceRequestService.getStatusCounts());

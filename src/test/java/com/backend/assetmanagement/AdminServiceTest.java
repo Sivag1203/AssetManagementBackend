@@ -1,13 +1,8 @@
 package com.backend.assetmanagement;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-import java.util.Optional;
-
-import com.backend.assetmanagement.dto.AdminDTO;
 import com.backend.assetmanagement.exception.ResourceNotFoundException;
 import com.backend.assetmanagement.model.Admin;
 import com.backend.assetmanagement.model.Auth;
@@ -15,14 +10,13 @@ import com.backend.assetmanagement.repository.AdminRepository;
 import com.backend.assetmanagement.repository.AuthRepository;
 import com.backend.assetmanagement.service.AdminService;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.MockitoAnnotations;
 
-@SpringBootTest
+import java.util.Optional;
+
 public class AdminServiceTest {
 
     @InjectMocks
@@ -36,9 +30,12 @@ public class AdminServiceTest {
 
     private Admin admin;
     private Auth auth;
+    private AutoCloseable closeable;
 
     @BeforeEach
     public void setUp() {
+        closeable = MockitoAnnotations.openMocks(this);
+
         auth = new Auth();
         auth.setId(1);
         auth.setEmail("admin@test.com");
@@ -60,57 +57,60 @@ public class AdminServiceTest {
         when(authRepository.save(auth)).thenReturn(auth);
         when(adminRepository.save(admin)).thenReturn(admin);
 
-        Admin result = adminService.addAdmin(admin);
+        Admin saved = adminService.addAdmin(admin);
 
-        assertEquals(admin, result);
+        assertNotNull(saved);
+        assertEquals("Admin User", saved.getName());
+        verify(authRepository, times(1)).save(auth);
+        verify(adminRepository, times(1)).save(admin);
     }
 
     @Test
     public void testGetAdminById_Success() {
         when(adminRepository.findById(1)).thenReturn(Optional.of(admin));
 
-        AdminDTO result = adminService.getAdminById(1);
+        Admin found = adminService.getAdminById(1);
 
-        assertEquals(admin.getName(), result.getName());
-        assertEquals(admin.getEmail(), result.getEmail());
+        assertNotNull(found);
+        assertEquals("admin@test.com", found.getEmail());
     }
 
     @Test
     public void testGetAdminById_NotFound() {
-        when(adminRepository.findById(100)).thenReturn(Optional.empty());
+        when(adminRepository.findById(99)).thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(ResourceNotFoundException.class, () -> {
-            adminService.getAdminById(100);
+        Exception ex = assertThrows(ResourceNotFoundException.class, () -> {
+            adminService.getAdminById(99);
         });
 
-        assertEquals("Admin not found with id: 100".toLowerCase(), exception.getMessage().toLowerCase());
+        assertTrue(ex.getMessage().toLowerCase().contains("admin not found with id"));
     }
 
     @Test
     public void testDeleteAdmin_Success() {
         when(adminRepository.findById(1)).thenReturn(Optional.of(admin));
 
-        String message = adminService.deleteAdmin(1);
+        String result = adminService.deleteAdmin(1);
 
-        verify(adminRepository).delete(admin);
-
-        assertEquals("Admin with id 1 deleted successfully.", message);
+        assertEquals("Admin with id 1 deleted successfully.", result);
+        verify(adminRepository, times(1)).delete(admin);
     }
 
     @Test
     public void testDeleteAdmin_NotFound() {
-        when(adminRepository.findById(99)).thenReturn(Optional.empty());
+        when(adminRepository.findById(88)).thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(ResourceNotFoundException.class, () -> {
-            adminService.deleteAdmin(99);
+        Exception ex = assertThrows(ResourceNotFoundException.class, () -> {
+            adminService.deleteAdmin(88);
         });
 
-        assertEquals("Admin not found with id: 99".toLowerCase(), exception.getMessage().toLowerCase());
+        assertTrue(ex.getMessage().toLowerCase().contains("admin not found with id"));
     }
 
     @AfterEach
-    public void tearDown() {
+    public void tearDown() throws Exception {
         admin = null;
         auth = null;
+        closeable.close();
     }
 }

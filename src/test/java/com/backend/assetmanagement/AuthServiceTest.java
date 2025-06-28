@@ -1,113 +1,103 @@
 package com.backend.assetmanagement;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 import com.backend.assetmanagement.exception.ResourceNotFoundException;
 import com.backend.assetmanagement.model.Auth;
 import com.backend.assetmanagement.repository.AuthRepository;
 import com.backend.assetmanagement.service.AuthService;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public class AuthServiceTest {
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
-    @InjectMocks
-    private AuthService authService;
+class AuthServiceTest {
 
-    @Mock
-    private AuthRepository authRepository;
+    @InjectMocks private AuthService authService;
 
-    private AutoCloseable closeable;
+    @Mock private AuthRepository authRepository;
+    @Mock private PasswordEncoder passwordEncoder;
 
-    private Auth sampleAuth;
+    private AutoCloseable mocks;
+    private Auth auth;
 
     @BeforeEach
-    public void setUp() {
-        closeable = MockitoAnnotations.openMocks(this);
+    void init() {
+        mocks = MockitoAnnotations.openMocks(this);
 
-        sampleAuth = new Auth();
-        sampleAuth.setId(1);
-        sampleAuth.setEmail("test@example.com");
-        sampleAuth.setPassword("pass123");
-        sampleAuth.setRole("employee");
-    }
-
-    @Test
-    public void testAddAuth() {
-        when(authRepository.save(sampleAuth)).thenReturn(sampleAuth);
-
-        Auth result = authService.addAuth(sampleAuth);
-        assertEquals("test@example.com", result.getEmail());
-    }
-
-    @Test
-    public void testGetAllAuths() {
-        Auth auth2 = new Auth();
-        auth2.setId(2);
-        auth2.setEmail("second@example.com");
-        auth2.setPassword("secondpass");
-        auth2.setRole("admin");
-
-        when(authRepository.findAll()).thenReturn(Arrays.asList(sampleAuth, auth2));
-
-        List<Auth> authList = authService.getAllAuths();
-        assertEquals(2, authList.size());
-    }
-
-    @Test
-    public void testGetAuthById_WhenExists() {
-        when(authRepository.findById(1)).thenReturn(Optional.of(sampleAuth));
-
-        Auth result = authService.getAuthById(1);
-        assertEquals("test@example.com", result.getEmail());
-    }
-
-    @Test
-    public void testGetAuthById_WhenNotExists() {
-        when(authRepository.findById(10)).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> {
-            authService.getAuthById(10);
-        });
-    }
-
-    @Test
-    public void testUpdateAuth() {
-        when(authRepository.findById(1)).thenReturn(Optional.of(sampleAuth));
-
-        Auth updated = new Auth();
-        updated.setEmail("updated@example.com");
-        updated.setPassword("newpass");
-        updated.setRole("admin");
-
-        when(authRepository.save(any(Auth.class))).thenReturn(updated);
-
-        Auth result = authService.updateAuth(1, updated);
-        assertEquals("updated@example.com", result.getEmail());
-        assertEquals("admin", result.getRole());
-    }
-
-    @Test
-    public void testDeleteAuth() {
-        when(authRepository.findById(1)).thenReturn(Optional.of(sampleAuth));
-
-        authService.deleteAuth(1);
-        verify(authRepository, times(1)).delete(sampleAuth);
+        auth = new Auth();
+        auth.setId(1);
+        auth.setEmail("test@example.com");
+        auth.setPassword("raw");
+        auth.setRole("employee");
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
-        closeable.close();
-        sampleAuth = null;
+    void close() throws Exception {
+        mocks.close();
+        auth = null;
+    }
+
+    @Test
+    void addAuth_ok() {
+        when(passwordEncoder.encode("raw")).thenReturn("enc");
+        when(authRepository.save(any(Auth.class))).thenAnswer(i -> i.getArgument(0));
+
+        Auth saved = authService.addAuth(auth);
+
+        assertEquals("enc", saved.getPassword());
+        verify(authRepository).save(auth);
+    }
+
+    @Test
+    void getAll() {
+        when(authRepository.findAll()).thenReturn(Arrays.asList(auth));
+        List<Auth> list = authService.getAllAuths();
+        assertEquals(1, list.size());
+    }
+
+    @Test
+    void getById_ok() {
+        when(authRepository.findById(1)).thenReturn(Optional.of(auth));
+        Auth found = authService.getAuthById(1);
+        assertEquals("test@example.com", found.getEmail());
+    }
+
+    @Test
+    void getById_notFound() {
+        when(authRepository.findById(2)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> authService.getAuthById(2));
+    }
+
+    @Test
+    void update_ok() {
+        when(authRepository.findById(1)).thenReturn(Optional.of(auth));
+        when(passwordEncoder.encode("new")).thenReturn("newEnc");
+        when(authRepository.save(any(Auth.class))).thenAnswer(i -> i.getArgument(0));
+
+        Auth upd = new Auth();
+        upd.setEmail("u@test.com");
+        upd.setPassword("new");
+        upd.setRole("admin");
+
+        Auth result = authService.updateAuth(1, upd);
+
+        assertEquals("u@test.com", result.getEmail());
+        assertEquals("newEnc",    result.getPassword());
+        assertEquals("admin",     result.getRole());
+    }
+
+    @Test
+    void delete_ok() {
+        when(authRepository.findById(1)).thenReturn(Optional.of(auth));
+        authService.deleteAuth(1);
+        verify(authRepository).delete(auth);
     }
 }

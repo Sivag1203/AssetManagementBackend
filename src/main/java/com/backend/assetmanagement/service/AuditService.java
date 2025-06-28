@@ -53,7 +53,8 @@ public class AuditService {
 
         audit.setAuditSubmission(savedSubmission);
         audit.setStatus(AuditStatus.submitted);
-        return auditRepository.save(audit);
+        auditRepository.delete(audit);
+        return audit;
     }
 
     public List<Audit> getAllAudits() {

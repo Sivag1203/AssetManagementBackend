@@ -10,13 +10,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/assigned-assets")
+@CrossOrigin(origins = "http://localhost:5173")
 public class AssignedAssetController {
 
     @Autowired
     private AssignedAssetService assignedAssetService;
 
     @PostMapping("/assign")
-    public AssignedAssetDTO assignAsset(@RequestBody AssignedAssetDTO dto) {
+    public AssignedAsset assignAsset(@RequestBody AssignedAsset dto) {
         return assignedAssetService.assignAsset(dto);
     }
 
@@ -26,7 +27,7 @@ public class AssignedAssetController {
     }
 
     @GetMapping("/{id}")
-    public AssignedAssetDTO getById(@PathVariable int id) {
+    public AssignedAsset getById(@PathVariable int id) {
         return assignedAssetService.getById(id);
     }
 
@@ -41,12 +42,12 @@ public class AssignedAssetController {
     }
 
     @GetMapping("/asset/{assetId}")
-    public List<AssignedAssetDTO> getByAsset(@PathVariable int assetId) {
+    public List<AssignedAsset> getByAsset(@PathVariable int assetId) {
         return assignedAssetService.getByAssetId(assetId);
     }
 
     @GetMapping("/employee/{employeeId}/asset/{assetId}")
-    public AssignedAssetDTO getByEmployeeAndAsset(@PathVariable int employeeId, @PathVariable int assetId) {
+    public AssignedAsset getByEmployeeAndAsset(@PathVariable int employeeId, @PathVariable int assetId) {
         return assignedAssetService.getByEmployeeAndAsset(employeeId, assetId);
     }
 }

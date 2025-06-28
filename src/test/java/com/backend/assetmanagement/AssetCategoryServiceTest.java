@@ -1,130 +1,129 @@
 package com.backend.assetmanagement;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import com.backend.assetmanagement.exception.ResourceNotFoundException;
 import com.backend.assetmanagement.model.AssetCategory;
 import com.backend.assetmanagement.repository.AssetCategoryRepository;
 import com.backend.assetmanagement.service.AssetCategoryService;
+import org.junit.jupiter.api.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-@SpringBootTest
-public class AssetCategoryServiceTest {
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class AssetCategoryServiceTest {
 
     @Mock
-    private AssetCategoryRepository assetCategoryRepository;
+    private AssetCategoryRepository repo;
 
     @InjectMocks
-    private AssetCategoryService assetCategoryService;
+    private AssetCategoryService service;
 
     private AutoCloseable closeable;
-
-    private AssetCategory category;
-    private AssetCategory updatedCategory;
+    private AssetCategory category;        // existing row
+    private AssetCategory updatePayload;   // object used for update
 
     @BeforeEach
-    void setUp() {
+    void init() {
         closeable = MockitoAnnotations.openMocks(this);
 
         category = new AssetCategory();
         category.setId(1);
         category.setName("Laptop");
 
-        updatedCategory = new AssetCategory();
-        updatedCategory.setName("Updated Laptop");
+        updatePayload = new AssetCategory();
+        updatePayload.setName("Desktop");
     }
 
     @AfterEach
-    void tearDown() throws Exception {
-        category = null;
-        updatedCategory = null;
+    void cleanup() throws Exception {
         closeable.close();
     }
+    @Test
+    void addCategory_success() {
+        when(repo.findByName("Laptop")).thenReturn(null);       
+        when(repo.save(category)).thenReturn(category);
+
+        AssetCategory saved = service.addCategory(category);
+
+        assertEquals("Laptop", saved.getName());
+        verify(repo).save(category);
+    }
 
     @Test
-    void testAddCategory() {
-        when(assetCategoryRepository.save(category)).thenReturn(category);
+    void addCategory_duplicateName_throws() {
+        when(repo.findByName("Laptop")).thenReturn(new AssetCategory());
 
-        AssetCategory result = assetCategoryService.addCategory(category);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> service.addCategory(category));
+
+        assertTrue(ex.getMessage().contains("Category already exists"));
+    }
+
+    @Test
+    void getAllCategories_returnsList() {
+        when(repo.findAll()).thenReturn(List.of(category));
+
+        List<AssetCategory> list = service.getAllCategories();
+
+        assertEquals(1, list.size());
+        assertEquals("Laptop", list.get(0).getName());
+    }
+
+    @Test
+    void getById_found() {
+        when(repo.findById(1)).thenReturn(Optional.of(category));
+
+        AssetCategory result = service.getCategoryById(1);
 
         assertEquals("Laptop", result.getName());
     }
 
     @Test
-    void testGetAllCategories() {
-        List<AssetCategory> categoryList = Arrays.asList(category);
-        when(assetCategoryRepository.findAll()).thenReturn(categoryList);
+    void getById_notFound() {
+        when(repo.findById(99)).thenReturn(Optional.empty());
 
-        List<AssetCategory> result = assetCategoryService.getAllCategories();
-
-        assertEquals(1, result.size());
-        assertEquals("Laptop", result.get(0).getName());
+        assertThrows(ResourceNotFoundException.class,
+                () -> service.getCategoryById(99));
     }
 
     @Test
-    void testGetCategoryById_Success() {
-        when(assetCategoryRepository.findById(1)).thenReturn(Optional.of(category));
+    void updateCategory_success() {
+        when(repo.findById(1)).thenReturn(Optional.of(category));
+        when(repo.save(any())).thenAnswer(i -> i.getArgument(0));   // echo back
 
-        AssetCategory result = assetCategoryService.getCategoryById(1);
+        AssetCategory updated = service.updateCategory(1, updatePayload);
 
-        assertEquals("Laptop", result.getName());
+        assertEquals("Desktop", updated.getName());
+        verify(repo).save(category);                                // same instance updated
     }
 
     @Test
-    void testGetCategoryById_NotFound() {
-        when(assetCategoryRepository.findById(99)).thenReturn(Optional.empty());
+    void updateCategory_notFound() {
+        when(repo.findById(42)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            assetCategoryService.getCategoryById(99);
-        });
+        assertThrows(ResourceNotFoundException.class,
+                () -> service.updateCategory(42, updatePayload));
     }
 
     @Test
-    void testUpdateCategory_Success() {
-        when(assetCategoryRepository.findById(1)).thenReturn(Optional.of(category));
-        when(assetCategoryRepository.save(category)).thenReturn(category);
+    void deleteCategory_success() {
+        when(repo.findById(1)).thenReturn(Optional.of(category));
 
-        AssetCategory result = assetCategoryService.updateCategory(1, updatedCategory);
+        service.deleteCategory(1);
 
-        assertEquals("Updated Laptop", result.getName());
+        verify(repo).delete(category);
     }
 
     @Test
-    void testUpdateCategory_NotFound() {
-        when(assetCategoryRepository.findById(88)).thenReturn(Optional.empty());
+    void deleteCategory_notFound() {
+        when(repo.findById(77)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            assetCategoryService.updateCategory(88, updatedCategory);
-        });
-    }
-
-    @Test
-    void testDeleteCategory_Success() {
-        when(assetCategoryRepository.findById(1)).thenReturn(Optional.of(category));
-
-        assetCategoryService.deleteCategory(1);
-
-        verify(assetCategoryRepository, times(1)).delete(category);
-    }
-
-    @Test
-    void testDeleteCategory_NotFound() {
-        when(assetCategoryRepository.findById(66)).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> {
-            assetCategoryService.deleteCategory(66);
-        });
+        assertThrows(ResourceNotFoundException.class,
+                () -> service.deleteCategory(77));
     }
 }
